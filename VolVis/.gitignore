@@ -12,5 +12,7 @@ nb-configuration.xml
 
 # Package Files #
 *.jar
+!lib/jogl/*
 *.war
 *.ear
+
