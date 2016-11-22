@@ -25,10 +25,13 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
 
     private Volume volume = null;
     private GradientVolume gradients = null;
+    private double[] firstViewVec = null;
     RaycastRendererPanel panel;
     TransferFunction tFunc;
     TransferFunctionEditor tfEditor;
     TransferFunction2DEditor tfEditor2D;
+    
+
     
     public RaycastRenderer() {
         panel = new RaycastRendererPanel(this);
@@ -95,6 +98,105 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     }
 
 
+    void maximalIntenstityProjection(double[] viewMatrix) {
+     
+        // clear image
+        for (int j = 0; j < image.getHeight(); j++) {
+            for (int i = 0; i < image.getWidth(); i++) {
+                image.setRGB(i, j, 0);
+            }
+        }
+
+        // vector uVec and vVec define a plane through the origin, 
+        // perpendicular to the view vector viewVec
+        double[] viewVec = new double[3];
+        double[] uVec = new double[3];
+        double[] vVec = new double[3];
+        VectorMath.setVector(viewVec, viewMatrix[2], viewMatrix[6], viewMatrix[10]);
+        VectorMath.setVector(uVec, viewMatrix[0], viewMatrix[4], viewMatrix[8]);
+        VectorMath.setVector(vVec, viewMatrix[1], viewMatrix[5], viewMatrix[9]);
+        
+        // get smallest dimention 
+        double minDim = Math.max(Math.max(volume.getDimX(), volume.getDimY()), volume.getDimZ());      
+        minDim *= 0.5;
+        
+        if(firstViewVec == null)
+        {
+            firstViewVec = viewVec;
+            VectorMath.normalizeVector(firstViewVec);
+            VectorMath.scaleVector(firstViewVec, minDim);
+           
+        }
+        
+        double[] q0 = viewVec;
+        VectorMath.normalizeVector(q0);
+        VectorMath.scaleVector(q0, minDim);
+    
+        double[] q1 = new double[3];
+        VectorMath.setVector(q1, -q0[0], -q0[1], -q0[2]);
+        
+        
+        
+        
+        // image is square
+        int imageCenter = image.getWidth() / 2;
+
+        double[] pixelCoord = new double[3];
+        double[] volumeCenter = new double[3];
+        VectorMath.setVector(volumeCenter, volume.getDimX() / 2 , volume.getDimY() / 2, volume.getDimZ() / 2);
+        //VectorMath.setVector(volumeCenter, r[0], r[1], r[2]);
+
+        // sample on a plane through the origin of the volume data
+        double max = volume.getMaximum();
+        TFColor voxelColor = new TFColor();
+
+        
+        for (int j = 0; j < image.getHeight(); j++) 
+        {
+            for (int i = 0; i < image.getWidth(); i++) 
+            {
+                int maxVal = 0;
+                int val = 0;
+                
+                int k = 25;
+                
+                for(int l = 1; l < k; l++)
+                {
+                    double[] r = VectorMath.lerp(q0, q1, (double)l/(double)k);
+
+                    pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
+                            + volumeCenter[0] + r[0];
+                    pixelCoord[1] = uVec[1] * (i - imageCenter) + vVec[1] * (j - imageCenter)
+                            + volumeCenter[1] + r[1];
+                    pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)
+                            + volumeCenter[2] + r[2];
+
+                    val = getVoxel(pixelCoord);
+                    maxVal = Math.max(val, maxVal);
+                }
+
+                val = maxVal;
+                // Map the intensity to a grey value by linear scaling
+                voxelColor.r = val/max;
+                voxelColor.g = voxelColor.r;
+                voxelColor.b = voxelColor.r;
+                voxelColor.a = val > 0 ? 1.0 : 0.0;  // this makes intensity 0 completely transparent and the rest opaque
+                // Alternatively, apply the transfer function to obtain a color
+                // voxelColor = tFunc.getColor(val);
+                
+                
+                // BufferedImage expects a pixel color packed as ARGB in an int
+                int c_alpha = voxelColor.a <= 1.0 ? (int) Math.floor(voxelColor.a * 255) : 255;
+                int c_red = voxelColor.r <= 1.0 ? (int) Math.floor(voxelColor.r * 255) : 255;
+                int c_green = voxelColor.g <= 1.0 ? (int) Math.floor(voxelColor.g * 255) : 255;
+                int c_blue = voxelColor.b <= 1.0 ? (int) Math.floor(voxelColor.b * 255) : 255;
+                int pixelColor = (c_alpha << 24) | (c_red << 16) | (c_green << 8) | c_blue;
+                image.setRGB(i, j, pixelColor);
+            }
+        }
+
+    }
+    
     void slicer(double[] viewMatrix) {
 
         // clear image
@@ -154,6 +256,53 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 image.setRGB(i, j, pixelColor);
             }
         }
+
+    }
+
+    
+    private void drawDebug(GL2 gl) {
+        gl.glPushAttrib(GL2.GL_CURRENT_BIT);
+        gl.glDisable(GL2.GL_LIGHTING);
+        gl.glColor4d(1.0, 0.5, 0.5, 1.0);
+        gl.glLineWidth(1.5f);
+        gl.glEnable(GL.GL_LINE_SMOOTH);
+        gl.glHint(GL.GL_LINE_SMOOTH_HINT, GL.GL_NICEST);
+        gl.glEnable(GL.GL_BLEND);
+        gl.glBlendFunc(GL.GL_SRC_ALPHA, GL.GL_ONE_MINUS_SRC_ALPHA);
+        
+        if(firstViewVec != null)
+        {
+            // Pick q0 and q1
+            double[] q0 = firstViewVec;
+            double[] q1 = new double[3];
+            VectorMath.setVector(q1, -firstViewVec[0], -firstViewVec[1], -firstViewVec[2]);
+            double[] r = VectorMath.lerp(q0, q1, 0.25);
+            
+            gl.glBegin(GL.GL_LINES);
+//            gl.glVertex3d(firstViewVec[0] * 400.0 , firstViewVec[1] * 400.0, firstViewVec[2] * 400.0);
+//            gl.glVertex3d(-firstViewVec[0] * 400.0, -firstViewVec[1] * 400.0, -firstViewVec[2] * 400.0);
+            gl.glVertex3d(q0[0] , q0[1], q0[2]);
+            gl.glVertex3d(q1[0], q1[1], q1[2]);
+            gl.glEnd();
+            
+            gl.glPointSize(5.0f);
+            gl.glColor4d(1.0, 1.0, 0.4, 1.0);
+
+            gl.glBegin(GL.GL_POINTS);
+            gl.glVertex3d(q0[0] , q0[1], q0[2]);
+            gl.glVertex3d(q1[0], q1[1], q1[2]);
+            gl.glVertex3d(r[0], r[1], r[2]);
+           // gl.glVertex3d(0,0,0);
+            gl.glEnd();
+
+        }
+
+        
+
+        gl.glDisable(GL.GL_LINE_SMOOTH);
+        gl.glDisable(GL.GL_BLEND);
+        gl.glEnable(GL2.GL_LIGHTING);
+        gl.glPopAttrib();
 
     }
 
@@ -218,19 +367,22 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     }
 
     @Override
-    public void visualize(GL2 gl) {
-
-
+    public void visualize(GL2 gl) 
+    {
         if (volume == null) {
             return;
         }
 
         drawBoundingBox(gl);
+       
+        drawDebug(gl);
 
         gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, viewMatrix, 0);
 
         long startTime = System.currentTimeMillis();
-        slicer(viewMatrix);    
+        
+        // Support multiple render modes
+        maximalIntenstityProjection(viewMatrix);    
         
         long endTime = System.currentTimeMillis();
         double runningTime = (endTime - startTime);

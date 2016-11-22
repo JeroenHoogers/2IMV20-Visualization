@@ -17,6 +17,32 @@ public class VectorMath {
         v[2] = c2;
     }
 
+    // scale vector v using scalar s
+    public static void scaleVector(double[] v, double s) {
+        v[0] *= s;
+        v[1] *= s;
+        v[2] *= s;
+    }
+    
+    // vector lerp
+    public static double[] lerp(double[] v0, double[] v1, double t)
+    {
+        double[] r = new double[3];
+        r[0] = (1-t) * v0[0] + t * v1[0];
+        r[1] = (1-t) * v0[1] + t * v1[1];
+        r[2] = (1-t) * v0[2] + t * v1[2];
+        return r;
+    }
+    
+    // normalize vector v
+    public static void normalizeVector(double[] v) 
+    {
+        double l = length(v);
+        v[0] /= l;
+        v[1] /= l;
+        v[2] /= l;
+    }
+    
     // compute dotproduct of vectors v and w
     public static double dotproduct(double[] v, double[] w) {
         double r = 0;
