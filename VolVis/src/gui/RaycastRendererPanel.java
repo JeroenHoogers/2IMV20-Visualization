@@ -133,19 +133,22 @@ public class RaycastRendererPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void mipButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_mipButtonActionPerformed
-        JOptionPane.showMessageDialog(this, "Not implemented.");
+        renderer.setRenderMode(RaycastRenderer.RenderMode.MIP);
+        //JOptionPane.showMessageDialog(this, "Not implemented.");
     }//GEN-LAST:event_mipButtonActionPerformed
 
     private void slicerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_slicerButtonActionPerformed
-        
+        renderer.setRenderMode(RaycastRenderer.RenderMode.SLICE);
     }//GEN-LAST:event_slicerButtonActionPerformed
 
     private void compositingButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_compositingButtonActionPerformed
-        JOptionPane.showMessageDialog(this, "Not implemented.");
+        renderer.setRenderMode(RaycastRenderer.RenderMode.COMPOSITION);
+        //JOptionPane.showMessageDialog(this, "Not implemented.");
     }//GEN-LAST:event_compositingButtonActionPerformed
 
     private void tf2dButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_tf2dButtonActionPerformed
-        JOptionPane.showMessageDialog(this, "Not implemented.");
+        renderer.setRenderMode(RaycastRenderer.RenderMode.TRANSFER2D);
+        //JOptionPane.showMessageDialog(this, "Not implemented.");
     }//GEN-LAST:event_tf2dButtonActionPerformed
 
     private void shadingCheckboxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_shadingCheckboxActionPerformed
