@@ -93,18 +93,49 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         return tfEditor;
     }
     
-    short getVoxel(double[] coord) {
-
-        if (coord[0] < 0 || coord[0] > volume.getDimX() || coord[1] < 0 || coord[1] > volume.getDimY()
-                || coord[2] < 0 || coord[2] > volume.getDimZ()) {
+    short getVoxel(double[] coord) 
+    {
+        if (coord[0] < 0 || Math.ceil(coord[0]) >= volume.getDimX() || coord[1] < 0 || Math.ceil(coord[1]) >= volume.getDimY()
+                || coord[2] < 0 || Math.ceil(coord[2]) >= volume.getDimZ()) {
             return 0;
         }
 
-        int x = (int) Math.floor(coord[0]);
-        int y = (int) Math.floor(coord[1]);
-        int z = (int) Math.floor(coord[2]);
-
-        return volume.getVoxel(x, y, z);
+        // Take floor and ceil values
+        int xF = (int) Math.floor(coord[0]);
+        int xC = (int) Math.ceil(coord[0]);
+        
+        double alpha = (coord[0] - xF) / (xC - xF);
+        
+        int yF = (int) Math.floor(coord[1]);
+        int yC = (int) Math.ceil(coord[1]);
+        
+        double beta = (coord[1] - yF) / (yC - yF);
+        
+        int zF = (int) Math.floor(coord[2]);
+        int zC = (int) Math.ceil(coord[2]);
+        
+        double gamma = (coord[2] - zF) / (zC - zF);
+       
+        short v0 = volume.getVoxel(xF, yF, zF);
+        short v1 = volume.getVoxel(xC, yF, zF);
+        short v2 = volume.getVoxel(xF, yC, zF);
+        short v3 = volume.getVoxel(xC, yC, zF);
+        short v4 = volume.getVoxel(xF, yF, zC);
+        short v5 = volume.getVoxel(xC, yF, zC);
+        short v6 = volume.getVoxel(xF, yC, zC);
+        short v7 = volume.getVoxel(xC, yC, zC);
+        
+        short result = (short)(
+                (1-alpha) * (1-beta) * (1-gamma) * v0 +
+                alpha * (1-beta) * (1-gamma) * v1 +
+                (1-alpha) * beta * (1-gamma) * v2 +
+                alpha * beta * (1-gamma) * v3 +
+                (1-alpha) * (1-beta) * gamma * v4 +
+                alpha * (1-beta) * gamma * v5 +
+                (1-alpha) * beta * gamma * v6 +
+                alpha * beta * gamma * v7);
+                
+        return result;
     }
 
 
@@ -171,8 +202,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 {
                     double[] r = VectorMath.lerp(q0, q1, (double)l/(double)k);
 
-                    pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter)
-                            + volumeCenter[0] + r[0];
+                    pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter) + volumeCenter[0] + r[0];
                     pixelCoord[1] = uVec[1] * (i - imageCenter) + vVec[1] * (j - imageCenter)
                             + volumeCenter[1] + r[1];
                     pixelCoord[2] = uVec[2] * (i - imageCenter) + vVec[2] * (j - imageCenter)

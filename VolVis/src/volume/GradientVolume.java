@@ -49,13 +49,14 @@ public class GradientVolume {
         return dimZ;
     }
 
-    private void compute() {
-
+    private void compute() 
+    {
         // this just initializes all gradients to the vector (0,0,0)
         for (int i=0; i<data.length; i++) {
             data[i] = zero;
         }
-                
+        
+        
     }
     
     public double getMaxGradientMagnitude() {
