@@ -93,6 +93,94 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         return tfEditor;
     }
     
+    boolean getPlaneIntersection(double[] intersectPoint, double[] vec, double[] plane)
+    {
+        double[] vecA = new double[3];
+        double[] vecB = new double[3];
+        double[] vecC = new double[3];
+        VectorMath.setVector(vecA, plane[0], plane[1], plane[2]);
+        VectorMath.setVector(vecB, plane[3], plane[4], plane[5]);
+        VectorMath.setVector(vecC, plane[6], plane[7], plane[8]);
+        
+        double[] vecAB = {(vecA[0] - vecB[0]), 
+                          (vecA[1] - vecB[1]), 
+                          (vecA[2] - vecB[2])};
+        double[] vecBC = {(vecB[0] - vecC[0]), 
+                          (vecB[1] - vecC[1]), 
+                          (vecB[2] - vecC[2])};
+        
+        double[] planeNormal = new double[3];
+        
+        planeNormal = VectorMath.crossproduct(vecAB, vecBC);
+        
+        double d = -((planeNormal[0] * vecA[0]) + (planeNormal[1] * vecA[1]) + (planeNormal[2] * vecA[2]));
+        double[] planeEq = {planeNormal[0], planeNormal[1], planeNormal[2], d};
+        double t = -planeEq[3] / ((planeEq[0] * vec[0]) + (planeEq[1] * vec[1]) + (planeEq[2] * vec[2]));
+        
+        intersectPoint[0] = vec[0] * t;
+        intersectPoint[1] = vec[1] * t;
+        intersectPoint[2] = vec[2] * t;
+        
+        if (intersectPoint[0] >= plane[0] && intersectPoint[0] <= plane[6] &&
+            intersectPoint[1] >= plane[1] && intersectPoint[1] <= plane[7] &&
+            intersectPoint[2] >= plane[2] && intersectPoint[2] <= plane[8])
+        {
+            return true;
+        }
+        return false;
+    }
+    
+    void getIntersectionPoints(double[] q0, double[] q1, double[] vec)
+    {
+        double[][] planes = {{-volume.getDimX() / 2.0, -volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            -volume.getDimX() / 2.0, volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, -volume.getDimY() / 2.0, volume.getDimZ() / 2.0},
+                          {-volume.getDimX() / 2.0, -volume.getDimY() / 2.0, -volume.getDimZ() / 2.0,
+                            -volume.getDimX() / 2.0, volume.getDimY() / 2.0, -volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, volume.getDimY() / 2.0, -volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, -volume.getDimY() / 2.0, -volume.getDimZ() / 2.0},
+                          {volume.getDimX() / 2.0, -volume.getDimY() / 2.0, -volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, -volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, volume.getDimY() / 2.0, -volume.getDimZ() / 2.0},
+                          {-volume.getDimX() / 2.0, -volume.getDimY() / 2.0, -volume.getDimZ() / 2.0,
+                            -volume.getDimX() / 2.0, -volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            -volume.getDimX() / 2.0, volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            -volume.getDimX() / 2.0, volume.getDimY() / 2.0, -volume.getDimZ() / 2.0},
+                          {-volume.getDimX() / 2.0, volume.getDimY() / 2.0, -volume.getDimZ() / 2.0,
+                            -volume.getDimX() / 2.0, volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, volume.getDimY() / 2.0, -volume.getDimZ() / 2.0},
+                          {-volume.getDimX() / 2.0, -volume.getDimY() / 2.0, -volume.getDimZ() / 2.0,
+                            -volume.getDimX() / 2.0, -volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, -volume.getDimY() / 2.0, volume.getDimZ() / 2.0,
+                            volume.getDimX() / 2.0, -volume.getDimY() / 2.0, -volume.getDimZ() / 2.0}};
+        
+        double[] intersectionPoint = new double[3];
+        boolean firstFound = false;
+        q0[0] = 1;
+        for(int i = 0; i < 6; i++)
+        {
+            if (getPlaneIntersection(intersectionPoint, vec, planes[i]))
+            {
+                if (!firstFound)
+                {
+                    q0[0] = intersectionPoint[0];
+                    q0[1] = intersectionPoint[1];
+                    q0[2] = intersectionPoint[2];
+                    firstFound = true;
+                }
+                else
+                {
+                    q1[0] = intersectionPoint[0];
+                    q1[1] = intersectionPoint[1];
+                    q1[2] = intersectionPoint[2];
+                }
+            }
+        }
+    }
+    
     short getVoxel(double[] coord) 
     {
         if (coord[0] < 0 || Math.ceil(coord[0]) >= volume.getDimX() || coord[1] < 0 || Math.ceil(coord[1]) >= volume.getDimY()
@@ -169,13 +257,14 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             VectorMath.scaleVector(firstViewVec, minDim); 
         }
         
-        double[] q0 = viewVec;
-        VectorMath.normalizeVector(q0);
-        VectorMath.scaleVector(q0, minDim);
+        
+        double[] q0 = new double[3];
+        //VectorMath.normalizeVector(q0);
+        //VectorMath.scaleVector(q0, minDim);
     
         double[] q1 = new double[3];
-        VectorMath.setVector(q1, -q0[0], -q0[1], -q0[2]);
-        
+        //VectorMath.setVector(q1, -q0[0], -q0[1], -q0[2]);
+        getIntersectionPoints(q0, q1, viewVec);
         
         // image is square
         int imageCenter = image.getWidth() / 2;
@@ -422,17 +511,17 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         if(firstViewVec != null)
         {
             // Pick q0 and q1
-            double[] q0 = firstViewVec;
+            double[] q0 = new double[3];
             double[] q1 = new double[3];
-            VectorMath.setVector(q1, -firstViewVec[0], -firstViewVec[1], -firstViewVec[2]);
-            double[] r = VectorMath.lerp(q0, q1, 0.25);
-            
-//            gl.glBegin(GL.GL_LINES);
-////            gl.glVertex3d(firstViewVec[0] * 400.0 , firstViewVec[1] * 400.0, firstViewVec[2] * 400.0);
-////            gl.glVertex3d(-firstViewVec[0] * 400.0, -firstViewVec[1] * 400.0, -firstViewVec[2] * 400.0);
-//            gl.glVertex3d(q0[0] , q0[1], q0[2]);
-//            gl.glVertex3d(q1[0], q1[1], q1[2]);
-//            gl.glEnd();
+            //VectorMath.setVector(q1, -firstViewVec[0], -firstViewVec[1], -firstViewVec[2]);
+            //double[] r = VectorMath.lerp(q0, q1, 0.25);
+            getIntersectionPoints(q0, q1, firstViewVec);
+            gl.glBegin(GL.GL_LINES);
+//            gl.glVertex3d(firstViewVec[0] * 400.0 , firstViewVec[1] * 400.0, firstViewVec[2] * 400.0);
+//            gl.glVertex3d(-firstViewVec[0] * 400.0, -firstViewVec[1] * 400.0, -firstViewVec[2] * 400.0);
+            gl.glVertex3d(q0[0] , q0[1], q0[2]);
+            gl.glVertex3d(q1[0], q1[1], q1[2]);
+            gl.glEnd();
             
             gl.glPointSize(5.0f);
             gl.glColor4d(1.0, 1.0, 0.4, 1.0);
@@ -524,7 +613,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
 
         drawBoundingBox(gl);
        
-        drawDebug(gl);
+        //drawDebug(gl);
 
         gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, viewMatrix, 0);
 
