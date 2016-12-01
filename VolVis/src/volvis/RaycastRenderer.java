@@ -95,6 +95,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     
     boolean getPlaneIntersection(double[] intersectPoint, double[] vec, double[] plane)
     {
+        double eps = 0.000001;
+        
         double[] vecA = new double[3];
         double[] vecB = new double[3];
         double[] vecC = new double[3];
@@ -121,9 +123,9 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         intersectPoint[1] = vec[1] * t;
         intersectPoint[2] = vec[2] * t;
         
-        if (intersectPoint[0] >= plane[0] && intersectPoint[0] <= plane[6] &&
-            intersectPoint[1] >= plane[1] && intersectPoint[1] <= plane[7] &&
-            intersectPoint[2] >= plane[2] && intersectPoint[2] <= plane[8])
+        if (intersectPoint[0] >= plane[0] - eps && intersectPoint[0] <= plane[6] + eps &&
+            intersectPoint[1] >= plane[1] - eps && intersectPoint[1] <= plane[7] + eps &&
+            intersectPoint[2] >= plane[2] - eps && intersectPoint[2] <= plane[8] + eps)
         {
             return true;
         }
@@ -159,25 +161,37 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         
         double[] intersectionPoint = new double[3];
         boolean firstFound = false;
-        q0[0] = 1;
+        
+        double[] p0 = new double[3];
+        double[] p1 = new double[3];
+
         for(int i = 0; i < 6; i++)
         {
+            
             if (getPlaneIntersection(intersectionPoint, vec, planes[i]))
             {
                 if (!firstFound)
                 {
-                    q0[0] = intersectionPoint[0];
-                    q0[1] = intersectionPoint[1];
-                    q0[2] = intersectionPoint[2];
+                    VectorMath.setVector(p0, intersectionPoint[0], intersectionPoint[1], intersectionPoint[2]);
                     firstFound = true;
                 }
                 else
                 {
-                    q1[0] = intersectionPoint[0];
-                    q1[1] = intersectionPoint[1];
-                    q1[2] = intersectionPoint[2];
+                    VectorMath.setVector(p1, intersectionPoint[0], intersectionPoint[1], intersectionPoint[2]);
                 }
             }
+        }
+        
+        // Check whether the vector direction matches the viewvector such that q0 is always the first point encountered
+        if(Math.signum(p1[0]) == Math.signum(vec[0]))
+        {
+            VectorMath.setVector(q0, p0[0], p0[1], p0[2]);
+            VectorMath.setVector(q1, p1[0], p1[1], p1[2]);
+        }
+        else
+        {
+            VectorMath.setVector(q0, p1[0], p1[1], p1[2]);
+            VectorMath.setVector(q1, p0[0], p0[1], p0[2]);
         }
     }
     
@@ -259,11 +273,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         
         
         double[] q0 = new double[3];
-        //VectorMath.normalizeVector(q0);
-        //VectorMath.scaleVector(q0, minDim);
-    
         double[] q1 = new double[3];
-        //VectorMath.setVector(q1, -q0[0], -q0[1], -q0[2]);
         getIntersectionPoints(q0, q1, viewVec);
         
         // image is square
@@ -354,20 +364,16 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double minDim = Math.max(Math.max(volume.getDimX(), volume.getDimY()), volume.getDimZ());      
         minDim *= 0.5;
         
-        if(firstViewVec == null)
-        {
-            firstViewVec = viewVec;
-            VectorMath.normalizeVector(firstViewVec);
-            VectorMath.scaleVector(firstViewVec, minDim); 
-        }
+//        if(firstViewVec == null)
+//        {
+//            firstViewVec = viewVec;
+//            VectorMath.normalizeVector(firstViewVec);
+//            VectorMath.scaleVector(firstViewVec, minDim); 
+//        }
         
-        double[] q0 = viewVec;
-        VectorMath.normalizeVector(q0);
-        VectorMath.scaleVector(q0, minDim);
-    
+        double[] q0 = new double[3];
         double[] q1 = new double[3];
-        VectorMath.setVector(q1, -q0[0], -q0[1], -q0[2]);
-        
+        getIntersectionPoints(q0, q1, viewVec);
         
         // image is square
         int imageCenter = image.getWidth() / 2;
@@ -397,7 +403,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 
                 for(int l = 1; l < k; l++)
                 {
-                    double[] r = VectorMath.lerp(q1, q0, (double)l/(double)k);
+                    double[] r = VectorMath.lerp(q0, q1, (double)l/(double)k);
 
                     pixelCoord[0] = uVec[0] * (i - imageCenter) + vVec[0] * (j - imageCenter) + volumeCenter[0] + r[0];
                     pixelCoord[1] = uVec[1] * (i - imageCenter) + vVec[1] * (j - imageCenter)
@@ -526,12 +532,13 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             gl.glPointSize(5.0f);
             gl.glColor4d(1.0, 1.0, 0.4, 1.0);
 
-//            gl.glBegin(GL.GL_POINTS);
-//            gl.glVertex3d(q0[0] , q0[1], q0[2]);
-//            gl.glVertex3d(q1[0], q1[1], q1[2]);
+            gl.glBegin(GL.GL_POINTS);
+            gl.glVertex3d(q0[0] , q0[1], q0[2]);
+            gl.glColor4d(1.0, 0.0, 1.0, 1.0);
+            gl.glVertex3d(q1[0], q1[1], q1[2]);
 //            gl.glVertex3d(r[0], r[1], r[2]);
 //           // gl.glVertex3d(0,0,0);
-//            gl.glEnd();
+            gl.glEnd();
 
         }
 
@@ -613,7 +620,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
 
         drawBoundingBox(gl);
        
-        //drawDebug(gl);
+        drawDebug(gl);
 
         gl.glGetDoublev(GL2.GL_MODELVIEW_MATRIX, viewMatrix, 0);
 
@@ -682,6 +689,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
 
     @Override
     public void changed() {
+        firstViewVec = null;
         for (int i=0; i < listeners.size(); i++) {
             listeners.get(i).changed();
         }
