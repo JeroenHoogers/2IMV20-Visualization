@@ -28,7 +28,8 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         SLICE,
         MIP,
         COMPOSITION,
-        TRANSFER2D
+        TRANSFER2D,
+        SHADED
     }
     
     private RenderMode renderMode = RenderMode.SLICE;
@@ -36,7 +37,12 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     private GradientVolume gradients = null;
     private double[] firstViewVec = null;
     private int rotSamples = 15;
-    private int staticSamples = 120;
+    private int staticSamples = 240;
+    private double kAmbient = 0.1;
+    private double kDiffuse = 0.7;
+    private double kSpec = 0.2;
+    private double specAlpha = 10;
+    
     RaycastRendererPanel panel;
     TransferFunction tFunc;
     TransferFunctionEditor tfEditor;
@@ -200,15 +206,69 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     {
         if (coord[0] < 0 || Math.ceil(coord[0]) >= volume.getDimX() || coord[1] < 0 || Math.ceil(coord[1]) >= volume.getDimY()
                 || coord[2] < 0 || Math.ceil(coord[2]) >= volume.getDimZ()) {
-            return new VoxelGradient(0,0,0);
+            return new VoxelGradient(0.0f, 0.0f, 0.0f);
         }
 
-        // Take floor and ceil values
-        int x = (int) Math.floor(coord[0]);
-        int y = (int) Math.floor(coord[1]);
-        int z = (int) Math.floor(coord[2]);
+        //Take floor and ceil values
+        int xF = (int) Math.floor(coord[0]);
+        int xC = (int) Math.ceil(coord[0]);
         
-        return gradients.getGradient(x,y,z);
+        double alpha = (coord[0] - xF) / (xC - xF);
+        
+        int yF = (int) Math.floor(coord[1]);
+        int yC = (int) Math.ceil(coord[1]);
+        
+        double beta = (coord[1] - yF) / (yC - yF);
+        
+        int zF = (int) Math.floor(coord[2]);
+        int zC = (int) Math.ceil(coord[2]);
+        
+        double gamma = (coord[2] - zF) / (zC - zF);
+        
+        VoxelGradient v0 = gradients.getGradient(xF, yF, zF);
+        VoxelGradient v1 = gradients.getGradient(xC, yF, zF);
+        VoxelGradient v2 = gradients.getGradient(xF, yC, zF);
+        VoxelGradient v3 = gradients.getGradient(xC, yC, zF);
+        VoxelGradient v4 = gradients.getGradient(xF, yF, zC);
+        VoxelGradient v5 = gradients.getGradient(xC, yF, zC);
+        VoxelGradient v6 = gradients.getGradient(xF, yC, zC);
+        VoxelGradient v7 = gradients.getGradient(xC, yC, zC);
+        
+        //Perform three linear interpolations
+        //int xLerp = (int)(((1 - alphaX) * xF) + (alphaX * xC));
+        float xLerp = (float)(
+                (1-alpha) * (1-beta) * (1-gamma) * v0.x +
+                alpha * (1-beta) * (1-gamma) * v1.x +
+                (1-alpha) * beta * (1-gamma) * v2.x +
+                alpha * beta * (1-gamma) * v3.x +
+                (1-alpha) * (1-beta) * gamma * v4.x +
+                alpha * (1-beta) * gamma * v5.x +
+                (1-alpha) * beta * gamma * v6.x +
+                alpha * beta * gamma * v7.x);
+        
+        
+        float yLerp = (float)(
+                (1-alpha) * (1-beta) * (1-gamma) * v0.y +
+                alpha * (1-beta) * (1-gamma) * v1.y +
+                (1-alpha) * beta * (1-gamma) * v2.y +
+                alpha * beta * (1-gamma) * v3.y +
+                (1-alpha) * (1-beta) * gamma * v4.y +
+                alpha * (1-beta) * gamma * v5.y +
+                (1-alpha) * beta * gamma * v6.y +
+                alpha * beta * gamma * v7.y);
+        
+        
+        float zLerp = (float)(
+                (1-alpha) * (1-beta) * (1-gamma) * v0.z +
+                alpha * (1-beta) * (1-gamma) * v1.z +
+                (1-alpha) * beta * (1-gamma) * v2.z +
+                alpha * beta * (1-gamma) * v3.z +
+                (1-alpha) * (1-beta) * gamma * v4.z +
+                alpha * (1-beta) * gamma * v5.z +
+                (1-alpha) * beta * gamma * v6.z +
+                alpha * beta * gamma * v7.z);
+        
+        return new VoxelGradient(xLerp, yLerp, zLerp);
     }
     
     short getVoxel(double[] coord) 
@@ -463,7 +523,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     }
     
     
-    void Transfer2d(double[] viewMatrix) 
+    void Transfer2d(double[] viewMatrix, boolean shaded) 
     { 
         // clear image
         for (int j = 0; j < image.getHeight(); j++) {
@@ -514,6 +574,11 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
         double opacity = 0.0;
         double voxelValue = 0.0;
         
+        //normalize viewvector for shading
+        
+        double[] vNormalized = viewVec;
+        VectorMath.normalizeVector(vNormalized);
+        
         for (int j = 0; j < image.getHeight(); j++) 
         {
             for (int i = 0; i < image.getWidth(); i++) 
@@ -522,7 +587,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 
                 int k = (interactiveMode) ? rotSamples : staticSamples;
                 
-                TFColor col;
+                TFColor col = new TFColor();
                 TFColor newCol;
                 voxelColor.r = 0.0;
                 voxelColor.g = 0.0;
@@ -556,7 +621,44 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                         opacity = 0;
                     }
                     
-                    col = tfEditor2D.triangleWidget.color;
+                    col.r = tfEditor2D.triangleWidget.color.r;
+                    col.g = tfEditor2D.triangleWidget.color.g;
+                    col.b = tfEditor2D.triangleWidget.color.b;
+                    if (shaded && opacity > 0)
+                    {
+                        TFColor iAmb = new TFColor(1.0, 1.0, 1.0, 1.0);
+                        iAmb.r *= kAmbient;
+                        iAmb.g *= kAmbient;
+                        iAmb.b *= kAmbient;
+                        
+                        double[] normal = new double[3];
+                        VectorMath.setVector(normal, (grad.x / grad.mag), (grad.y / grad.mag), (grad.z / grad.mag));
+                        double LDotN = VectorMath.dotproduct(viewVec, normal);
+                        double diffValid = Math.max(Math.signum(LDotN), 0);
+                       
+                        TFColor iDiff = col;
+                        iDiff.r *= kDiffuse * LDotN * diffValid;
+                        iDiff.g *= kDiffuse * LDotN * diffValid;
+                        iDiff.b *= kDiffuse * LDotN * diffValid;
+                        
+                        
+                        double NDotH = VectorMath.dotproduct(normal, vNormalized);
+                        double spec = kSpec * Math.pow(NDotH, specAlpha);
+                        
+                        double specValid = Math.max(Math.signum(NDotH), 0);
+                        
+                        TFColor iSpec = new TFColor(1.0, 1.0, 1.0, 1.0);
+                        iSpec.r *= spec * specValid;
+                        iSpec.g *= spec * specValid;
+                        iSpec.b *= spec * specValid;
+                        
+                        
+                        col.r = iAmb.r + iDiff.r + iSpec.r;
+                        col.g = iAmb.g + iDiff.g + iSpec.g;
+                        col.b = iAmb.b + iDiff.b + iSpec.b;
+                        
+                    }
+                    
                     newCol = new TFColor();
                     newCol.r = col.r * opacity + (1-opacity) * voxelColor.r;
                     newCol.g = col.g * opacity + (1-opacity) * voxelColor.g;
@@ -782,7 +884,10 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
                 composition(viewMatrix);
                 break;
             case TRANSFER2D:
-                Transfer2d(viewMatrix);
+                Transfer2d(viewMatrix, false);
+                break;
+            case SHADED:
+                Transfer2d(viewMatrix, true);
                 break;
             default:
                 slicer(viewMatrix);
