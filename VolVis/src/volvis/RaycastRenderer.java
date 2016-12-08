@@ -39,7 +39,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
     
     // Quality settings
     private int rotSamples = 30;
-    private int staticSamples = 225;
+    private int staticSamples = 300;
     private int downscaleRatio = 2;     
     
     // Illumination constants
@@ -490,13 +490,18 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             val = getVoxel(coord);
             grad = getVoxelGradient(coord);
             
+            //For each trianglewidget
+            double maxGradMag = tfEditor2D.maxGradientMagnitude;
+            double minGradMagInput = tfEditor2D.triangleWidget.minGradMagnitude;
+            double maxGradMagInput = tfEditor2D.triangleWidget.maxGradMagnitude;
             if (grad.mag == 0 && val == tfEditor2D.triangleWidget.baseIntensity)
             {
                 opacity = 1;
             }
             else if (grad.mag > 0 && 
                     ((val - (tfEditor2D.triangleWidget.radius * grad.mag)) <= tfEditor2D.triangleWidget.baseIntensity &&
-                    tfEditor2D.triangleWidget.baseIntensity <= (val + (tfEditor2D.triangleWidget.radius * grad.mag))))
+                    tfEditor2D.triangleWidget.baseIntensity <= (val + (tfEditor2D.triangleWidget.radius * grad.mag))) &&
+                    grad.mag <= (maxGradMagInput * maxGradMag) && grad.mag >= (minGradMagInput * maxGradMag))
             {
                 opacity = 1 - ((1/tfEditor2D.triangleWidget.radius) * Math.abs((tfEditor2D.triangleWidget.baseIntensity - val)/grad.mag));
             }
@@ -508,6 +513,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             col.r = tfEditor2D.triangleWidget.color.r;
             col.g = tfEditor2D.triangleWidget.color.g;
             col.b = tfEditor2D.triangleWidget.color.b;
+            
             
             if (shaded && opacity > 0)
             {
@@ -548,6 +554,7 @@ public class RaycastRenderer extends Renderer implements TFChangeListener {
             newCol.g = col.g * opacity + (1-opacity) * voxelColor.g;
             newCol.b = col.b * opacity + (1-opacity) * voxelColor.b;
             voxelColor = newCol;  
+            //End For each
         }
         
         return voxelColor;
