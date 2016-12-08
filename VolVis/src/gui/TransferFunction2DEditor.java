@@ -47,7 +47,7 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
         labelMinVal.setText("0");
         labelMaxVal.setText(Integer.toString(maxIntensity));
 
-        triangleWidget = new TriangleWidget((short) (maxIntensity / 2), 0.2);
+        triangleWidget = new TriangleWidget((short) (maxIntensity / 2), 0.2, 0.2, 0.8);
         setSelectedInfo();
     }
 
@@ -285,17 +285,20 @@ public class TransferFunction2DEditor extends javax.swing.JPanel {
         changed();
     }//GEN-LAST:event_opacityLabelActionPerformed
 
-    public class TriangleWidget {
-
+    public class TriangleWidget 
+    {
         public short baseIntensity;
         public double radius;
         public TFColor color;
-        
+        public double minGradMagnitude;
+        public double maxGradMagnitude;
 
-        public TriangleWidget(short base, double r) {
+        public TriangleWidget(short base, double r, double minGradMag, double maxGradMag) {
             this.baseIntensity = base;
             this.radius = r;
             this.color = new TFColor(0.0, 204.0/255.0, 153.0/255.0, 0.3);
+            this.minGradMagnitude = minGradMag;
+            this.maxGradMagnitude = maxGradMag;
         }
     }
 
