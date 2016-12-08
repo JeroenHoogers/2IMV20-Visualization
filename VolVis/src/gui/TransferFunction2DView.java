@@ -82,34 +82,22 @@ public class TransferFunction2DView extends javax.swing.JPanel {
         radiusControlPoint = new Ellipse2D.Double(xpos + (ed.triangleWidget.radius * binWidth * ed.maxGradientMagnitude) - DOTSIZE / 2,  0, DOTSIZE, DOTSIZE);
         g2.fill(radiusControlPoint); 
         
-        
-        xpos = (int) (ed.triangleWidget.baseIntensity * binWidth);
-        ypos = (int)(( 1 - ed.triangleWidget.minGradMagnitude) * h);
-        
         int magW = (int) (ed.triangleWidget.radius * binWidth * ed.maxGradientMagnitude * ed.triangleWidget.minGradMagnitude);
+        xpos = (int) (ed.triangleWidget.baseIntensity * binWidth);
+        ypos = (int)(( 1 - ed.triangleWidget.minGradMagnitude) * h);     
         
         minGradMagControlPoint = new Ellipse2D.Double(xpos - magW - DOTSIZE / 2, ypos - DOTSIZE / 2, DOTSIZE, DOTSIZE);
-        
-        g2.drawLine(
-                xpos - magW, 
-                ypos, 
-                xpos + magW, 
-                ypos);
+        g2.drawLine(xpos - magW, ypos, xpos + magW, ypos);
         g2.fill(minGradMagControlPoint); 
-        
-        magW = (int) (ed.triangleWidget.radius * binWidth * ed.maxGradientMagnitude * ed.triangleWidget.maxGradMagnitude);
-        
+
+        magW = (int) (ed.triangleWidget.radius * binWidth * ed.maxGradientMagnitude * ed.triangleWidget.maxGradMagnitude);        
         xpos = (int) (ed.triangleWidget.baseIntensity * binWidth);
-        ypos = (int)(( 1 - ed.triangleWidget.maxGradMagnitude) * h);       
+        ypos = (int)(( 1 - ed.triangleWidget.maxGradMagnitude) * h);
+        
         maxGradMagControlPoint = new Ellipse2D.Double(xpos - magW - DOTSIZE / 2, ypos - DOTSIZE / 2, DOTSIZE, DOTSIZE);
-        g2.drawLine(
-                xpos - magW, 
-                ypos, 
-                xpos + magW, 
-                ypos);
+        g2.drawLine(xpos - magW, ypos, xpos + magW, ypos);
         g2.fill(maxGradMagControlPoint); 
     }
-    
     
     private class TriangleWidgetHandler extends MouseMotionAdapter {
 
@@ -147,20 +135,15 @@ public class TransferFunction2DView extends javax.swing.JPanel {
                 double w = getWidth();
                 double h = getHeight();
                 double binWidth = (double) w / (double) ed.xbins;
-                if (selectedBaseControlPoint) {
+                
+                if (selectedMinGradMag) {                
+                    ed.triangleWidget.minGradMagnitude = Math.min(Math.max(0.0 , 1 - (dragEnd.y / h)), ed.triangleWidget.maxGradMagnitude - 0.02);
+                } else if(selectedMaxGradMag) {
+                    ed.triangleWidget.maxGradMagnitude = Math.max(Math.min(1.0, 1 - (dragEnd.y / h)), ed.triangleWidget.minGradMagnitude + 0.02);
+                } else if (selectedBaseControlPoint) {
                     ed.triangleWidget.baseIntensity = (short) (dragEnd.x / binWidth);
                 } else if (selectedRadiusControlPoint) {
                     ed.triangleWidget.radius = (dragEnd.x - (ed.triangleWidget.baseIntensity * binWidth))/(binWidth*ed.maxGradientMagnitude);
-                }
-                else if (selectedMinGradMag) 
-                {
-                    // TODO: interact with min grad mag slider
-                    //  ed.triangleWidget.minGradMagnitude = (dragEnd.y) -
-                    
-                }
-                else if(selectedMaxGradMag) 
-                {
-                    // TODO: interact with max grad mag slider
                 }
                 
                 ed.setSelectedInfo();
@@ -168,27 +151,37 @@ public class TransferFunction2DView extends javax.swing.JPanel {
                 repaint();
             } 
         }
-
     }
     
     
     private class SelectionHandler extends MouseAdapter {
         @Override
-        public void mousePressed(MouseEvent e) {
-            if (baseControlPoint.contains(e.getPoint())) {
+        public void mousePressed(MouseEvent e) 
+        {
+            if(maxGradMagControlPoint.contains(e.getPoint())) {
+                selectedMaxGradMag = true;
+            } else if (minGradMagControlPoint.contains(e.getPoint())) {
+                selectedMinGradMag = true;    
+            } else if (baseControlPoint.contains(e.getPoint())) {
                 selectedBaseControlPoint = true;
             } else if (radiusControlPoint.contains(e.getPoint())) {
                 selectedRadiusControlPoint = true;
             } else {
                 selectedRadiusControlPoint = false;
                 selectedBaseControlPoint = false;
+                selectedMinGradMag = false;
+                selectedMaxGradMag = false;
             }
         }
         
         @Override
-        public void mouseReleased(MouseEvent e) {
+        public void mouseReleased(MouseEvent e) 
+        {
             selectedRadiusControlPoint = false;
             selectedBaseControlPoint = false;
+            selectedMinGradMag = false;
+            selectedMaxGradMag = false;
+            
             ed.changed();
             repaint();
         }
