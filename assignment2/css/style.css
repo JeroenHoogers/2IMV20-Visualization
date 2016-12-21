@@ -1,0 +1,42 @@
+body {
+  background: #fcfcfa;
+  margin: auto;
+}
+
+
+#world .active {
+ 	fill: orange !important;
+ 	/*stroke: black;*/
+ 	/*stroke-width: 1px;*/
+}
+
+#world path
+{
+ 	cursor: pointer;
+}
+
+#world .hover {
+ 	fill: lightgrey;
+/* 	stroke: white;
+ 	stroke-width: 0.25px;*/
+}
+
+#map-container {
+    display: block;
+    margin: 0 auto;
+}
+
+svg {
+	margin: 0;
+}
+
+path {
+  stroke: white;
+  stroke-width: 0.25px;
+  fill: grey;
+}
+
+/*.blur {
+  -webkit-filter: blur(6px);
+  filter: blur(6px);
+}*/
