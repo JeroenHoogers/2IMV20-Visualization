@@ -9,6 +9,7 @@
 		<div id="map-container"></div>
 		<script src="//d3js.org/d3.v3.min.js"></script>
 		<script src="//d3js.org/topojson.v0.min.js"></script>
+		<script src="js/dataloader.js"></script>
 		<script>
 
 		// var width = 960, height = 500;
@@ -17,6 +18,9 @@
 		var hover;
 
 	    var map;
+
+	    // load data
+	    loaddata();
 
 		function clicked(d) 
 		{
@@ -27,6 +31,7 @@
 
 			map.selectAll("path")
 				.classed("active", function(d) { return d === selected; });
+
 		}
 
 
@@ -42,10 +47,31 @@
 		{
 			hover = null;
 			map.selectAll("path")
-				.classed("hover", function(d) { return d === hover; });
-				
+				.classed("hover", function(d) { return d === hover; });	
 		}
 
+
+		// d3.queue()
+		//     .defer(d3.json, "data/world-110m2.json", loadWorld)
+		//     .defer(d3.csv, "data/country-codes.csv", function(d) { 
+		//     	countryMap.set(parseInt(d['M49']), {"name": d['name'], "code": d['ISO3166-1-Alpha-3']})
+		//     })
+		//     .await(ready);
+
+
+		// function loadWorld(topology)
+		// {
+		// 	map.attr("id", "world")
+		//     		.selectAll("path")
+		// 	      	.data(topojson.object(topology, topology.objects.countries)
+		// 	          .geometries)
+		// 	    .enter()
+		// 	      	.append("path")
+		// 	      	.attr("d", path)
+		// 	      	.on("click", clicked)
+		// 	      	.on("mouseenter", mouseenter)
+		// 	      	.on("mouseleave", mouseexit);
+		// }
 
 		function draw(height)
 		{
@@ -56,7 +82,7 @@
 		    projection = d3.geo.equirectangular().scale((width/620)*100).translate([width/2, height/2]);
 		    var path = d3.geo.path().projection(projection);
 
-			// load and display the World
+			// // load and display the World
 			d3.json("data/world-110m2.json", function(error, topology) {
 			    map.attr("id", "world")
 		    		.selectAll("path")
@@ -68,6 +94,24 @@
 			      	.on("click", clicked)
 			      	.on("mouseenter", mouseenter)
 			      	.on("mouseleave", mouseexit)
+		      	.append("title")
+  					.text(function(d) 
+  					{ 
+  						var tooltip =  ""; 
+  						if(countryMap.has(d.id))
+  						{
+  							tooltip += countryMap.get(d.id).name;
+
+  							var code = countryMap.get(d.id).code;
+
+  							if(landDist.has(code))
+  							{
+  								tooltip += " 2015: " + landDist.get(code).m_2015;
+  							}
+  						}
+
+  						return tooltip;
+  					});
 			});
 
 			// var projection = d3.geo.mercator()
