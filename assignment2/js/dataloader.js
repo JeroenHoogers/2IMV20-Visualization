@@ -14,9 +14,7 @@ function loaddata()
 
 	d3.csv("data/landdist/API_AG.LND.TOTL.K2_DS2_en_csv_v2.csv", function(error, data) {
 	    data.forEach(function(d) {
-	        landDist.set(d['Country Code'], 
-	        	{"m_2015": d['2015']}
-	        );
+	        landDist.set(d['Country Code'], d);
 	    });
 	});
 
