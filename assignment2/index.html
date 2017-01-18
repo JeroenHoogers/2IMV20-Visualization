@@ -7,8 +7,10 @@
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<body>
 		<div id="map-container"></div>
-		<script src="//d3js.org/d3.v3.min.js"></script>
-		<script src="//d3js.org/topojson.v0.min.js"></script>
+		<!-- <script src="//d3js.org/d3.v3.min.js"></script> -->
+		<!-- <script src="//d3js.org/topojson.v0.min.js"></script> --> 
+		<script src="js/d3.v3.min.js"></script>
+		<script src="js/topojson.v0.min.js"></script>
 		<script src="js/dataloader.js"></script>
 		<script>
 
@@ -106,7 +108,9 @@
 
   							if(landDist.has(code))
   							{
-  								tooltip += " 2015: " + landDist.get(code)['2015'];
+  								tooltip += " Total 2015: " + landDist.get(code)['Total_Land_Sqkm']['2015'];
+  								tooltip += ",  Forest 2015: " + landDist.get(code)['Forest_Land_Sqkm']['2015'];
+  								tooltip += ",  Agriculture 2015: " + landDist.get(code)['Agriculture_Land_Sqkm']['2015'];
   							}
   						}
 
