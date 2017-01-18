@@ -44,7 +44,7 @@ function addIndicator(error, data, mapping, indicatorName)
 {
 	data.forEach(function(d) 
 	{
-		var countryCode = d['Country Code'];
+		var countryCode = d['Country Name'];
 		var countryElement = [];
 
 		if (mapping.has(countryCode))
