@@ -6,13 +6,34 @@
 	</head>
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 	<body>
-		<div id="map-container"></div>
+		<div class="page">
+			<div class="header">
+				2IMV20 Visualization
+			</div>
+			<div class="content">
+				<div class="side-left">
+					Legend
+					<div id="summary"></div>
+				</div>
+				<div class="main-content">
+					<div id="map"></div>
+				</div>
+				<div class="timeline-container">
+					Timeline
+					<div id="timeline">
+						
+					</div>
+				</div>
+			</div>
+
+		</div>
+
 		<script src="//d3js.org/d3.v3.min.js"></script>
 		<script src="//d3js.org/topojson.v0.min.js"></script>
 		<script src="js/dataloader.js"></script>
 		<script>
 
-		// var width = 960, height = 500;
+		var width = 800, height = 550;
 
 		var selected;
 		var hover;
@@ -73,46 +94,71 @@
 		// 	      	.on("mouseleave", mouseexit);
 		// }
 
-		function draw(height)
-		{
-			$("#map-container").html("<svg id='map' xmlns='http://www.w3.org/2000/svg' width='100%' height='" + height + "'></svg>");
-		    map = d3.select("svg");
-		    var width = $("svg").parent().width();
+		map = d3.select("#map").append("svg").attr({			
+			"width": width,
+			"height": height
+		});
 
-		    projection = d3.geo.equirectangular().scale((width/620)*100).translate([width/2, height/2]);
-		    var path = d3.geo.path().projection(projection);
+		// var width = 800;
+		// var height = 600;
 
-			// // load and display the World
-			d3.json("data/world-110m2.json", function(error, topology) {
-			    map.attr("id", "world")
-		    		.selectAll("path")
-			      	.data(topojson.object(topology, topology.objects.countries)
-			          .geometries)
-			    .enter()
-			      	.append("path")
-			      	.attr("d", path)
-			      	.on("click", clicked)
-			      	.on("mouseenter", mouseenter)
-			      	.on("mouseleave", mouseexit)
+	 	var projection = d3.geo.mercator()
+		      .scale((width + 1) / 2 / Math.PI)
+		      .translate([width / 2, height / 1.6])
+		      .precision(.5);
+
+	    var path = d3.geo.path().projection(projection);
+
+	    // Load worldmap
+		d3.json("data/world-topo-min.json", function(error, topology) {
+		    map.attr("id", "world")
+	    		.selectAll("path")
+		      	.data(topojson.object(topology, topology.objects.countries).geometries)
+		    .enter()
+		      	.append("path")
+		      	.attr("d", path)
+		      	.on("click", clicked)
+		      	.on("mouseenter", mouseenter)
+		      	.on("mouseleave", mouseexit)
+		   		.style("fill", countryColor)
 		      	.append("title")
   					.text(function(d) 
   					{ 
   						var tooltip =  ""; 
-  						if(countryMap.has(d.id))
-  						{
-  							tooltip += countryMap.get(d.id).name;
+  						// if(countryMap.has(d.properties.name))
+  						// {
+  							tooltip += d.properties.name;
 
-  							var code = countryMap.get(d.id).code;
+  							//var code = countryMap.get(d.properties.name).code;
 
-  							if(landDist.has(code))
+  							if(landDist.has(d.properties.name))
   							{
-  								tooltip += " 2015: " + landDist.get(code)['2015'];
+  								tooltip += " 2015: " + landDist.get(d.properties.name)['2015'];
   							}
-  						}
+  						//}
 
   						return tooltip;
   					});
-			});
+		});
+
+
+  		function countryColor(d,i)
+  		{
+  			return landDist.has(d.properties.name) ? "#aaa" : "red";
+  		}
+
+		// function draw(height)
+		// {
+			//$("#map-container").html("<svg id='map' xmlns='http://www.w3.org/2000/svg' width='100%' height='" + height + "'></svg>");
+		    //map = d3.select("svg");
+		    //var width = $("svg").parent().width();
+
+		    //var projection = d3.geo.equirectangular().scale((width/620)*100).translate([width/2, height/2]);
+
+		   
+			// // load and display the World
+
+			// });
 
 			// var projection = d3.geo.mercator()
 			//     .center([0, 5 ])
@@ -140,22 +186,22 @@
 			//       .append("path")
 			//       .attr("d", path)
 			// });
-		}
+		//}
 
-		$(window).resize(function() {
-		    if(this.resizeTO) clearTimeout(this.resizeTO);
-		    this.resizeTO = setTimeout(function() {
-		        $(this).trigger('resizeEnd');
-		    }, 500);
-		});
+		// $(window).resize(function() {
+		//     if(this.resizeTO) clearTimeout(this.resizeTO);
+		//     this.resizeTO = setTimeout(function() {
+		//         $(this).trigger('resizeEnd');
+		//     }, 500);
+		// });
 
-		$(window).bind('resizeEnd', function() {
-		    var height = $("#map-container").width()/2;
-		    $("#map-container svg").css("height", height);
-		    draw(height);
-		});
+		// $(window).bind('resizeEnd', function() {
+		//     var height = $("#map-container").width()/2;
+		//     $("#map-container svg").css("height", height);
+		//     draw(height);
+		// });
 
-		draw($("#map-container").width()/2);
+		// draw($("#map-container").width()/2);
 		</script>
 
 	</body>
