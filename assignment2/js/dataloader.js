@@ -2,42 +2,45 @@ var countryMap = new Map();
 var landDist = new Map();
 var gdpDist = new Map();
 
-function PrettifyEmptyData()
+function InterpolateMissingData(data)
 {
 	//TODO : Fix this
-
-	console.log("hoi");
-	console.log(landDist);
-	for (var [key, value] of landDist)//.foreach(function(data)
+	var countryCode = data['Country Name'];
+	var previousData = 'No data';
+	var interpolatedData = 0;
+	var previouskey = 'No data';
+	for (key in data)//.foreach(function(data)
 	{
-		console.log(key);
-		var countryCode = key;
-		var countryElement = landDist.get(countryCode);
-		var previousData = '';
-		value.forEach(function(d) 
+		
+		if (key >= 1960 && data[key] != '')
 		{
-			if (d == '')
+			previousData = Math.round(parseFloat(data[key]));// + " (in " + key + ")";
+			previouskey = key;
+		}
+		else if (key >= 1960)
+		{
+			if (previousData != 'No data')
 			{
-				if (previousData != '')
+				var nextKey = Number(key) + 1;
+				while (nextKey in data && data[nextKey] == '')
 				{
-					//data[d] = "No data";
-					countryElement[d] = "No data";
+					nextKey += 1;
+				}
+				if (nextKey in data && data[nextKey] != '')
+				{
+					previousData += Math.round(Math.round((parseFloat(data[nextKey])) - previousData) / (nextKey - key));
+					data[key] = previousData;
 				}
 				else
-				{
-					//data[d] = previousData;
-    				countryElement[d] = data[d];
-				}
-			//Check for actual 'year' value
-			}
+					data[key] = previousData + " (in " + previouskey + ")";
+			}	
 			else
 			{
-				previousData = data[d];
+				data[key] = previousData;
 			}
-		});
-    	landDist.set(countryCode, countryElement);
-
+		}
 	}
+	return data;
 }
 
 function addIndicator(error, data, mapping, indicatorName) 
@@ -52,7 +55,10 @@ function addIndicator(error, data, mapping, indicatorName)
 			countryElement = mapping.get(countryCode);
 		}
 
-    	countryElement[indicatorName] = d;
+		// Interpolate missing data, turn of by setting to 'd'.
+		var interpolatedData = InterpolateMissingData(d);
+
+    	countryElement[indicatorName] = interpolatedData;
     	mapping.set(countryCode, countryElement);
 	});
 }
