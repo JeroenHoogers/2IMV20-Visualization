@@ -19,7 +19,6 @@
 					<div id="map"></div>
 				</div>
 				<div class="timeline-container">
-					Timeline
 					<div id="timeline">
 						
 					</div>
@@ -31,6 +30,7 @@
 		<script src="js/d3.v3.min.js"></script>
 		<script src="js/topojson.v0.min.js"></script>
 		<script src="js/dataloader.js"></script>
+		<script src="js/timeline.js"></script>
 		<script>
 
 		var width = 900, height = 600;
@@ -38,10 +38,96 @@
 		var selected;
 		var hover;
 
-	    var map;
-
 	    // load data
 	    loaddata();
+
+
+
+		// d3.queue()
+		//     .defer(d3.json, "data/world-110m2.json", loadWorld)
+		//     .defer(d3.csv, "data/country-codes.csv", function(d) { 
+		//     	countryMap.set(parseInt(d['M49']), {"name": d['name'], "code": d['ISO3166-1-Alpha-3']})
+		//     })
+		//     .await(ready);
+
+
+		// function loadWorld(topology)
+		// {
+		// 	map.attr("id", "world")
+		//     		.selectAll("path")
+		// 	      	.data(topojson.object(topology, topology.objects.countries)
+		// 	          .geometries)
+		// 	    .enter()
+		// 	      	.append("path")
+		// 	      	.attr("d", path)
+		// 	      	.on("click", clicked)
+		// 	      	.on("mouseenter", mouseenter)
+		// 	      	.on("mouseleave", mouseexit);
+		// }
+
+		// Create summary svg
+		var summary = d3.select("#summary").append("svg").attr({			
+			"width": 275,
+			"height": 400
+		});
+
+		// Create map svg
+		var map = d3.select("#map").append("svg").attr({			
+			"width": width,
+			"height": height
+		});
+
+		// var width = 800;
+		// var height = 600;
+
+	 	var projection = d3.geo.mercator()
+		      .scale((width + 1) / 2 / Math.PI)
+		      .translate([width / 2, height / 1.6])
+		      .precision(.5);
+
+	    var path = d3.geo.path().projection(projection);
+
+	    // Load & fill worldmap
+		d3.json("data/world-topo-min.json", function(error, topology) {
+		    map.attr("id", "world")
+	    		.selectAll("path")
+		      	.data(topojson.object(topology, topology.objects.countries).geometries)
+		    .enter()
+		      	.append("path")
+		      	.attr("d", path)
+		      	.on("click", clicked)
+		      	.on("mouseenter", mouseenter)
+		      	.on("mouseleave", mouseexit)
+		   		.style("fill", countryColor)
+		      	.append("title")
+  					.text(function(d) 
+  					{ 
+  						var tooltip =  ""; 
+  						// if(countryMap.has(d.properties.name))
+  						// {
+  						var name = d.properties.name;
+						tooltip += name;
+
+						//var code = countryMap.get(d.properties.name).code;
+
+						if(landDist.has(d.properties.name))
+						{
+
+							tooltip += " Total 2015: " + landDist.get(name)['Total_Land_Sqkm']['2015'];
+							tooltip += ",  Forest 2015: " + landDist.get(name)['Forest_Land_Sqkm']['2015'];
+							tooltip += ",  Agriculture 2015: " + landDist.get(name)['Agriculture_Land_Sqkm']['2015'];
+						}
+  						//}
+
+  						return tooltip;
+  					});
+		});
+
+  		function countryColor(d,i)
+  		{
+  			return landDist.has(d.properties.name) ? "#aaa" : "red";
+  		}
+
 
 		function clicked(d) 
 		{
@@ -70,85 +156,6 @@
 			map.selectAll("path")
 				.classed("hover", function(d) { return d === hover; });	
 		}
-
-
-		// d3.queue()
-		//     .defer(d3.json, "data/world-110m2.json", loadWorld)
-		//     .defer(d3.csv, "data/country-codes.csv", function(d) { 
-		//     	countryMap.set(parseInt(d['M49']), {"name": d['name'], "code": d['ISO3166-1-Alpha-3']})
-		//     })
-		//     .await(ready);
-
-
-		// function loadWorld(topology)
-		// {
-		// 	map.attr("id", "world")
-		//     		.selectAll("path")
-		// 	      	.data(topojson.object(topology, topology.objects.countries)
-		// 	          .geometries)
-		// 	    .enter()
-		// 	      	.append("path")
-		// 	      	.attr("d", path)
-		// 	      	.on("click", clicked)
-		// 	      	.on("mouseenter", mouseenter)
-		// 	      	.on("mouseleave", mouseexit);
-		// }
-
-		map = d3.select("#map").append("svg").attr({			
-			"width": width,
-			"height": height
-		});
-
-		// var width = 800;
-		// var height = 600;
-
-	 	var projection = d3.geo.mercator()
-		      .scale((width + 1) / 2 / Math.PI)
-		      .translate([width / 2, height / 1.6])
-		      .precision(.5);
-
-	    var path = d3.geo.path().projection(projection);
-
-	    // Load worldmap
-		d3.json("data/world-topo-min.json", function(error, topology) {
-		    map.attr("id", "world")
-	    		.selectAll("path")
-		      	.data(topojson.object(topology, topology.objects.countries).geometries)
-		    .enter()
-		      	.append("path")
-		      	.attr("d", path)
-		      	.on("click", clicked)
-		      	.on("mouseenter", mouseenter)
-		      	.on("mouseleave", mouseexit)
-		   		.style("fill", countryColor)
-		      	.append("title")
-  					.text(function(d) 
-  					{ 
-  						var tooltip =  ""; 
-  						// if(countryMap.has(d.properties.name))
-  						// {
-  							tooltip += d.properties.name;
-
-  							//var code = countryMap.get(d.properties.name).code;
-
-  							if(landDist.has(d.properties.name))
-  							{
-
-  								tooltip += " Total 2015: " + landDist.get(code)['Total_Land_Sqkm']['2015'];
-  								tooltip += ",  Forest 2015: " + landDist.get(code)['Forest_Land_Sqkm']['2015'];
-  								tooltip += ",  Agriculture 2015: " + landDist.get(code)['Agriculture_Land_Sqkm']['2015'];
-  							}
-  						//}
-
-  						return tooltip;
-  					});
-		});
-
-
-  		function countryColor(d,i)
-  		{
-  			return landDist.has(d.properties.name) ? "#aaa" : "red";
-  		}
 
 		// function draw(height)
 		// {
