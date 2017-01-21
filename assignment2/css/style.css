@@ -12,6 +12,8 @@ body {
 {
     margin: 0 auto;
     width: 1200px;
+    padding: 20px;
+    background: #f3f3f3;
 }
 
 .side-left
@@ -21,6 +23,11 @@ body {
     padding: 10px;
     width: 277px;
     min-height: 500px;
+}
+
+.map-background {
+  fill: none;
+  pointer-events: all;
 }
 
 .content
@@ -46,12 +53,19 @@ body {
     margin: 0;
 }
 
-
-#world .active {
- 	fill: orange !important;
- 	/*stroke: black;*/
- 	/*stroke-width: 1px;*/
+.country {
+    cursor: pointer;
 }
+
+.country.active 
+{
+    fill: orange !important;
+}
+/*
+#world .active {
+ 	
+ 	stroke: black;
+}*/
 
 #world path
 {

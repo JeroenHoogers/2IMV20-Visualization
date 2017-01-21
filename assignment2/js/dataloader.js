@@ -2,6 +2,8 @@ var countryMap = new Map();
 var landDist = new Map();
 var gdpDist = new Map();
 
+var timelineData;
+
 function InterpolateMissingData(data)
 {
 	//TODO : Fix this
@@ -56,7 +58,8 @@ function addIndicator(error, data, mapping, indicatorName)
 		}
 
 		// Interpolate missing data, turn of by setting to 'd'.
-		var interpolatedData = InterpolateMissingData(d);
+	//	var interpolatedData = InterpolateMissingData(d);
+		var interpolatedData = d;
 
     	countryElement[indicatorName] = interpolatedData;
     	mapping.set(countryCode, countryElement);
@@ -65,6 +68,14 @@ function addIndicator(error, data, mapping, indicatorName)
 
 function loaddata()
 {
+	d3.csv("data/testworld.csv", function(d, i, columns) {
+	  for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
+	  d.total = t;
+	  return d;
+	},
+	function(error, data) {
+		timelineData = data;
+	});
 
 	// Load country metadata such that we can identify a country using the country code
 	d3.csv("data/country-codes.csv", function(error, data) {
