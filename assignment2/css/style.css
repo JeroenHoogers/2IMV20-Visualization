@@ -68,6 +68,24 @@ path.domain
     fill: orange !important;
 }
 
+.date
+{
+    stroke: white;
+    stroke-width: 1px;
+    cursor: pointer;
+}
+
+.date.active
+{
+    stroke: black;
+    stroke-width: 2px;
+}
+
+.date.nodata
+{
+    fill: #ccc;
+}
+
 /* timeline scale */
 
 .axis line {
