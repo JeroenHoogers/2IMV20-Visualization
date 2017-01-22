@@ -5,6 +5,8 @@ var Worldmap = function (width, height)
 	this.Initialize();
 
 	this.selectedCountry = d3.select(null);
+	this.filterYear = "2015";
+	this.filterIndicator = "Total_Land_Sqkm";
 	this.hover;
 };
 
@@ -26,6 +28,18 @@ Worldmap.prototype.Initialize = function ()
 
   	this.path = d3.geo.path().projection(this.projection);
 
+  	// this.colorScale = d3.scale.linear()
+	  //   .rangeRound([this.innerHeight, 0])
+	  //   .domain();
+
+ 	// this.color = d3.scale.threshold()
+	 //    .domain(d3.range(0, 1000))				// TODO: dynamic scale based on max value
+	 //    .range(d3.schemeBlues);
+
+	this.color = d3.scale.linear()
+		.domain([0, 2000000])		// TODO: dynamic scale based on max value / use percentages
+		.range(["lightblue","#11bfff"]);
+
 	this.svg = d3.select("#map").append("svg")
 		.attr("width", this.width)
 		.attr("height", this.height);
@@ -36,7 +50,16 @@ Worldmap.prototype.Initialize = function ()
   		.attr("height", this.height)
   		.on("click", this.resetZoom.bind(this));
 
-  	this.g = this.svg.append("g").style("stroke-width", "1.5px");
+  	this.g = this.svg.append("g").style("stroke-width", "0.5px");
+
+  	this.countryLabel = this.svg.append("text")
+  		.attr("x", 30)
+  		.attr("y", 570)
+  		.attr("fill", "black")
+  		.attr("font-size", "20px").text("World");
+
+  	this.legend = this.svg.append("g");
+
 
   	var that = this;
 
@@ -49,7 +72,7 @@ Worldmap.prototype.Initialize = function ()
 		      	.append("path")
 		      	.attr("d", that.path)
 		      	.attr("class", "country")
-		      	.on("mouseenter", mouseenter.bind(that))
+		      	// .on("mouseenter", mouseenter.bind(that))
 		      	// .on("mouseleave", mouseexit)
 		   		.style("fill", that.countryColor.bind(that))
 		      	.on("click", function(d){that.clicked(d, that, this); })
@@ -58,14 +81,28 @@ Worldmap.prototype.Initialize = function ()
 	});
 };
 
-Worldmap.prototype.countryColor = function(d,i)
+Worldmap.prototype.countryColor = function(d)
 {
-	return landDist.has(d.properties.name) ? "#aaa" : "red";
+	var name = d.properties.name;
+
+	if(landDist.has(name))
+	{
+		// TODO: insert dynamic indicator
+		var val = parseInt(landDist.get(name)[this.filterIndicator][this.filterYear]);
+		return this.color(val);
+	}
+	else
+	{	
+		// Missing data color
+		return "grey";
+	}
+
+	//return landDist.has(d.properties.name) ? "#aaa" : "red";
 };
 
 Worldmap.prototype.tooltip = function(d)
 {
-	var tooltip =  ""; 
+	var tooltip =  "";
 	var name = d.properties.name;
 	tooltip += name;
 
@@ -87,8 +124,10 @@ Worldmap.prototype.resetZoom = function()
 	// Perform zoom out transition
 	this.g.transition()
 		.duration(750)
-		.style("stroke-width", "1.5px")
+		.style("stroke-width", "0.5px")
 		.attr("transform", "");
+
+	this.countryLabel.text("World");
 };
 
 
@@ -111,9 +150,11 @@ Worldmap.prototype.clicked = function(d, that, p)
 	// Perform zoom transition
 	that.g.transition()
 		.duration(750)
-		.style("stroke-width", 1.5 / scale + "px")
-		//.attr("transform", "translate(" + translate + ")");
+		.style("stroke-width", 1 / scale + "px")
 		.attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+
+
+	this.countryLabel.text(d.properties.name);
 
 
 	// if (d && that.selectedCountry !== d) 
@@ -126,13 +167,13 @@ Worldmap.prototype.clicked = function(d, that, p)
 };
 
 
-function mouseenter(d) 
-{
-	hover = d;
-	this.svg.selectAll("path")
-		.classed("hover", function(d) { return d === hover; });
+// function mouseenter(d) 
+// {
+// 	hover = d;
+// 	this.svg.selectAll("path")
+// 		.classed("hover", function(d) { return d === hover; });
 		
-}
+// }
 
 // function mouseexit(d) 
 // {

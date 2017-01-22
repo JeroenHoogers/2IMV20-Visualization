@@ -13,7 +13,7 @@ body {
     margin: 0 auto;
     width: 1200px;
     padding: 20px;
-    background: #f3f3f3;
+    /*background: #f3f3f3;*/
 }
 
 .side-left
@@ -21,20 +21,21 @@ body {
     float:left;
     display: inline-block;
     padding: 10px;
-    width: 277px;
+    width: 275px;
     min-height: 500px;
 }
 
-.map-background {
+.map-background 
+{
   fill: none;
   pointer-events: all;
 }
 
 .content
 {
-    /*border: 1px solid #000;*/
-    background: #f3f3f3;
     border: 1px solid #ccc;
+    background: #f1f1f1;
+    /*border: 1px solid #ccc;*/
 }
 
 .main-content
@@ -47,10 +48,15 @@ body {
 
 .timeline-container
 {
-    border-top: 1px solid #ccc;
-    background: #f3f3f3;
+    border-top: 3px solid #ccc;
+    background: #f1f1f1;
     padding: 10px;
     margin: 0;
+}
+
+path.domain
+{
+    stroke: #aaa;
 }
 
 .country {
@@ -60,6 +66,30 @@ body {
 .country.active 
 {
     fill: orange !important;
+}
+
+/* timeline scale */
+
+.axis line {
+  fill: none;
+  stroke: green;
+  stroke-width: 1.6px;
+}
+
+.axis .minor {
+  stroke: red;
+  stroke-width: 0.4px;
+}
+
+.axis text {
+  font: 12px sans-serif;
+}
+ 
+.axis path {
+  fill: none;
+  stroke: #aaa;
+  stroke-width: 2.5px;
+  shape-rendering: crispEdges;
 }
 /*
 #world .active {
@@ -81,8 +111,7 @@ body {
 #map {
     /*display: block;*/
     /*border: 1px solid #ccc;*/
-    background: #fff;
-    border-left: 1px solid #ccc;
+    border-left: 3px solid #ccc;
     /*margin: auto;*/
 }
 
@@ -92,7 +121,7 @@ svg {
 
 path {
   stroke: white;
-  stroke-width: 0.25px;
+/*  stroke-width: 0.25px;*/
   fill: grey;
 }
 

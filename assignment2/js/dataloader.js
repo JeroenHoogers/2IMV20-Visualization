@@ -68,12 +68,7 @@ function addIndicator(error, data, mapping, indicatorName)
 
 function loaddata()
 {
-	d3.csv("data/testworld.csv", function(d, i, columns) {
-	  for (i = 1, t = 0; i < columns.length; ++i) t += d[columns[i]] = +d[columns[i]];
-	  d.total = t;
-	  return d;
-	},
-	function(error, data) {
+	d3.csv("data/testworld.csv", function(error, data) {
 		timelineData = data;
 	});
 
