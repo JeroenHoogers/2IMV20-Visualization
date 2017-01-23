@@ -35,6 +35,7 @@
 		<script src="js/timeline.js"></script>
 		<script src="js/worldmap.js"></script>
 		<script src="js/legend.js"></script>
+		<script src="js/filter.js"></script>
 		<script>
 
 		var width = 900, height = 600;
@@ -51,6 +52,7 @@
 	    var timeline;
 	    var legend;
 
+	    var filter = new Filter(map, timeline, legend);
 
 	    // TODO: construct after data is finished loading using an event.
 		setTimeout(function(){ 

@@ -137,6 +137,8 @@ Worldmap.prototype.resetZoom = function()
 		.attr("transform", "");
 
 	this.countryLabel.text("World");
+
+	filter.updateCountry("World");
 };
 
 
@@ -162,8 +164,11 @@ Worldmap.prototype.clicked = function(d, that, p)
 		.style("stroke-width", 1 / scale + "px")
 		.attr("transform", "translate(" + translate + ")scale(" + scale + ")");
 
+	var country = d.properties.name;
 
-	this.countryLabel.text(d.properties.name);
+	this.countryLabel.text(country);
+
+	filter.updateCountry(country);
 
 
 	// if (d && that.selectedCountry !== d) 
