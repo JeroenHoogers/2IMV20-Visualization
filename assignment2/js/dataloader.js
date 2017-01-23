@@ -74,8 +74,9 @@ var timelineData;
 //     	mapping.set(countryName, countryElement);
 // 	});
 // }
-function addIndicator(error, data, mapping, indicatorName) 
+function addIndicator(error, data, mapping, mainIndicator, indicatorName) 
 {
+	var indicatorMap = new Map();
 	var countryElement = [];
 	var countryName = "";
 	var val = 0;
@@ -83,9 +84,14 @@ function addIndicator(error, data, mapping, indicatorName)
 	{
 		countryName = d['Country Name'];
 		countryElement = [];
-		if (mapping.has(countryName))
+		if (mapping.has(mainIndicator))
 		{
-			countryElement = mapping.get(countryName);
+			indicatorMap = mapping.get(mainIndicator);
+		}
+		
+		if (indicatorMap.has(countryName))
+		{
+			countryElement = indicatorMap.get(countryName);
 		}
 
 		//countryElement[indicatorName] = [];
@@ -153,25 +159,25 @@ function loaddata()
 
 	// Load land distribution percentage metadata
 	d3.csv("data/landdistperc/API_AG.LND.AGRI.ZS_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, gdpDist, "Agriculture_Land_perc")
+		addIndicator(error, data, gdpDist, "Land_Distribution", "Agriculture_Land_perc")
 	});
 	d3.csv("data/landdistperc/API_AG.LND.ARBL.ZS_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, gdpDist, "Arable_Land_perc")
+		addIndicator(error, data, gdpDist, "Land_Distribution", "Arable_Land_perc")
 	});
 	d3.csv("data/landdistperc/API_AG.LND.FRST.ZS_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, gdpDist, "Forest_Land_perc")
+		addIndicator(error, data, gdpDist, "Land_Distribution", "Forest_Land_perc")
 	});
 
 
 	// Load GDP distribution percentage metadata
 	d3.csv("data/gdpdist/API_NV.AGR.TOTL.ZS_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, gdpDist, "Agriculture_GDP_perc")
+		addIndicator(error, data, gdpDist, "GDP_Distribution" ,"Agriculture_GDP_perc")
 	});
 	d3.csv("data/gdpdist/API_NV.IND.TOTL.ZS_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, gdpDist, "Industry_GDP_perc")
+		addIndicator(error, data, gdpDist, "GDP_Distribution", "Industry_GDP_perc")
 	});
 	d3.csv("data/gdpdist/API_NV.SRV.TETC.ZS_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, gdpDist, "Services_GDP_perc")
+		addIndicator(error, data, gdpDist, "GDP_Distribution", "Services_GDP_perc")
 	});
 	/* // This is a subset of the industry GDP
 	d3.csv("data/gdpdist/API_NV.IND.MANF.ZS_DS2_en_csv_v2.csv", function(error, data) {
