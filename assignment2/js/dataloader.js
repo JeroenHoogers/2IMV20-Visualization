@@ -44,33 +44,76 @@ var timelineData;
 // 	return data;
 // }
 
+// function addIndicator(error, data, mapping, indicatorName) 
+// {
+// 	var countryElement = [];
+// 	var countryName = "";
+// 	data.forEach(function(d) 
+// 	{
+// 		var countryName = d['Country Name'];
+// 		countryElement = [];
+// 		if (mapping.has(countryName))
+// 		{
+// 			countryElement = mapping.get(countryName);
+// 		}
+
+// 		countryElement[indicatorName] = [];
+
+// 		for (key in d)
+// 		{
+// 			if (key >= 1960)
+// 			{
+// 				countryElement[indicatorName][key] = parseFloat(d[key]) || "";
+// 			}
+// 		}
+		
+// 		// Interpolate missing data, turn of by setting to 'd'.
+// 		var interpolatedData = InterpolateMissingData(countryElement[indicatorName]);
+		
+//     	countryElement[indicatorName] = interpolatedData;
+//     	mapping.set(countryName, countryElement);
+// 	});
+// }
 function addIndicator(error, data, mapping, indicatorName) 
 {
 	var countryElement = [];
 	var countryName = "";
+	var val = 0;
 	data.forEach(function(d) 
 	{
-		var countryName = d['Country Name'];
+		countryName = d['Country Name'];
 		countryElement = [];
 		if (mapping.has(countryName))
 		{
 			countryElement = mapping.get(countryName);
 		}
 
-		countryElement[indicatorName] = [];
+		//countryElement[indicatorName] = [];
 
 		for (key in d)
 		{
-			if (key >= 1960)
+			if (!isNaN(parseInt(key)))
 			{
-				countryElement[indicatorName][key] = parseFloat(d[key]) || "";
+				//countryElement[indicatorName][key] = parseFloat(d[key]) || "";
+		  		var missingdata = isNaN(parseInt(d[key]));
+		  		if(!missingdata)
+		  			val = parseInt(d[key]);
+		  		else
+		  			val = 0;
+
+				countryElement.push({
+			  		"date": key,
+			  		"val": val,
+			  		"indicator": indicatorName,
+			  		"nodata" : missingdata
+			  	});
 			}
 		}
 		
 		// Interpolate missing data, turn of by setting to 'd'.
-		var interpolatedData = InterpolateMissingData(countryElement[indicatorName]);
+		//var interpolatedData = InterpolateMissingData(countryElement[indicatorName]);
 		
-    	countryElement[indicatorName] = interpolatedData;
+    	//countryElement[indicatorName] = interpolatedData;
     	mapping.set(countryName, countryElement);
 	});
 }
@@ -91,23 +134,36 @@ function loaddata()
 	});
 
 	// Load land distribution metadata
-	d3.csv("data/landdist/API_AG.LND.TOTL.K2_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, landDist, "Total_Land_Sqkm")
+	// d3.csv("data/landdist/API_AG.LND.TOTL.K2_DS2_en_csv_v2.csv", function(error, data) {
+	// 	addIndicator(error, data, landDist, "Total_Land_Sqkm")
+	// });
+	// d3.csv("data/landdist/API_AG.LND.FRST.K2_DS2_en_csv_v2.csv", function(error, data) {
+	// 	addIndicator(error, data, landDist, "Forest_Land_Sqkm")
+	// });
+	// d3.csv("data/landdist/API_AG.LND.AGRI.K2_DS2_en_csv_v2.csv", function(error, data) {
+	// 	addIndicator(error, data, landDist, "Agriculture_Land_Sqkm")
+	// });
+	// d3.csv("data/landdist/API_AG.LND.TOTL.RU.K2_DS2_en_csv_v2.csv", function(error, data) {
+	// 	addIndicator(error, data, landDist, "Rural_Land_Sqkm")
+	// });
+	// d3.csv("data/landdist/API_AG.LND.TOTL.UR.K2_DS2_en_csv_v2.csv", function(error, data) {
+	// 	addIndicator(error, data, landDist, "Urban_Land_Sqkm")
+	// });
+
+
+	// Load land distribution percentage metadata
+	d3.csv("data/landdistperc/API_AG.LND.AGRI.ZS_DS2_en_csv_v2.csv", function(error, data) {
+		addIndicator(error, data, gdpDist, "Agriculture_Land_perc")
 	});
-	d3.csv("data/landdist/API_AG.LND.FRST.K2_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, landDist, "Forest_Land_Sqkm")
+	d3.csv("data/landdistperc/API_AG.LND.ARBL.ZS_DS2_en_csv_v2.csv", function(error, data) {
+		addIndicator(error, data, gdpDist, "Arable_Land_perc")
 	});
-	d3.csv("data/landdist/API_AG.LND.AGRI.K2_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, landDist, "Agriculture_Land_Sqkm")
-	});
-	d3.csv("data/landdist/API_AG.LND.TOTL.RU.K2_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, landDist, "Rural_Land_Sqkm")
-	});
-	d3.csv("data/landdist/API_AG.LND.TOTL.UR.K2_DS2_en_csv_v2.csv", function(error, data) {
-		addIndicator(error, data, landDist, "Urban_Land_Sqkm")
+	d3.csv("data/landdistperc/API_AG.LND.FRST.ZS_DS2_en_csv_v2.csv", function(error, data) {
+		addIndicator(error, data, gdpDist, "Forest_Land_perc")
 	});
 
-	// Load GDP distribution metadata
+
+	// Load GDP distribution percentage metadata
 	d3.csv("data/gdpdist/API_NV.AGR.TOTL.ZS_DS2_en_csv_v2.csv", function(error, data) {
 		addIndicator(error, data, gdpDist, "Agriculture_GDP_perc")
 	});
@@ -121,6 +177,7 @@ function loaddata()
 	d3.csv("data/gdpdist/API_NV.IND.MANF.ZS_DS2_en_csv_v2.csv", function(error, data) {
 		addIndicator(error, data, gdpDist, "Manifacturing_GDP_perc")
 	});*/
+
 
 	// Previous method
 	// d3.csv("data/landdist/API_AG.LND.TOTL.K2_DS2_en_csv_v2.csv", function(error, data) {

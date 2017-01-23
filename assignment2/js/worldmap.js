@@ -88,8 +88,8 @@ Worldmap.prototype.countryColor = function(d)
 	if(landDist.has(name))
 	{
 		// TODO: insert dynamic indicator
-		var val = parseInt(landDist.get(name)[this.filterIndicator][this.filterYear]);
-		return this.color(val);
+		//var val = parseInt(landDist.get(name)[this.filterIndicator][this.filterYear]);
+		return "grey";//this.color(val);
 	}
 	else
 	{	
@@ -108,9 +108,18 @@ Worldmap.prototype.tooltip = function(d)
 
 	if(landDist.has(d.properties.name))
 	{
-		tooltip += " Total 2015: " + landDist.get(name)['Total_Land_Sqkm']['2015'];
-		tooltip += ",  Forest 2015: " + landDist.get(name)['Forest_Land_Sqkm']['2015'];
-		tooltip += ",  Agriculture 2015: " + landDist.get(name)['Agriculture_Land_Sqkm']['2015'];
+		console.log(landDist.get(name));
+		// for (var i = 0; i < currentLand.length; i++)
+		// {
+		// 	console.log(currentLand);
+		// 	if (currentLand.indicator == "Forest_Land_perc" && currentLand.date == "2015")
+		// 	{
+		// 		tooltip += ", " + currentLand.indicator + " " + currentLand.date + ": " + currentLand.val;
+		// 	}
+		// }
+		//landDist.get(name).indicator + ", " + landDist.get(name).indicator ;//['Total_Land_Sqkm']['2015'];
+		//tooltip += ",  Forest 2015: " + landDist.get(name)['Forest_Land_Sqkm']['2015'];
+		//tooltip += ",  Agriculture 2015: " + landDist.get(name)['Agriculture_Land_Sqkm']['2015'];
 	}
 
 	return tooltip;
