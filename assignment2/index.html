@@ -13,6 +13,8 @@
 			<div class="content">
 				<div class="side-left">
 					Legend
+  					<label><input type="radio" name="dataset" value="1990" checked> 1990</label>
+  					<label><input type="radio" name="dataset" value="2010"> 2010</label>
 					<div id="summary"></div>
 				</div>
 				<div class="main-content">
@@ -32,6 +34,7 @@
 		<script src="js/dataloader.js"></script>
 		<script src="js/timeline.js"></script>
 		<script src="js/worldmap.js"></script>
+		<script src="js/legend.js"></script>
 		<script>
 
 		var width = 900, height = 600;
@@ -46,19 +49,21 @@
 
 	    var map;
 	    var timeline;
+	    var legend;
 
 
 	    // TODO: construct after data is finished loading using an event.
 		setTimeout(function(){ 
 		    map = new Worldmap(900, 600);
 		    timeline = new Timeline(1180, 180);
+		    legend = new Legend(275, 400);
 		 }, 500);
 
 		// Create summary svg
-		var summary = d3.select("#summary").append("svg").attr({			
-			"width": 275,
-			"height": 400
-		});
+		// var summary = d3.select("#summary").append("svg").attr({			
+		// 	"width": 275,
+		// 	"height": 400
+		// });
 
 		</script>
 

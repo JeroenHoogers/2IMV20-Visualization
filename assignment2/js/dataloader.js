@@ -4,65 +4,74 @@ var gdpDist = new Map();
 
 var timelineData;
 
-function InterpolateMissingData(data)
-{
-	//TODO : Fix this
-	var countryCode = data['Country Name'];
-	var previousData = 'No data';
-	var interpolatedData = 0;
-	var previouskey = 'No data';
-	for (key in data)//.foreach(function(data)
-	{
+// function InterpolateMissingData(data)
+// {
+// 	var countryCode = data['Country Name'];
+// 	var previousData = 0;
+// 	var interpolatedData = 0;
+// 	var previouskey = '';
+// 	for (key in data)//.foreach(function(data)
+// 	{
 		
-		if (key >= 1960 && data[key] != '')
-		{
-			previousData = Math.round(parseFloat(data[key]));// + " (in " + key + ")";
-			previouskey = key;
-		}
-		else if (key >= 1960)
-		{
-			if (previousData != 'No data')
-			{
-				var nextKey = Number(key) + 1;
-				while (nextKey in data && data[nextKey] == '')
-				{
-					nextKey += 1;
-				}
-				if (nextKey in data && data[nextKey] != '')
-				{
-					previousData += Math.round(Math.round((parseFloat(data[nextKey])) - previousData) / (nextKey - key));
-					data[key] = previousData;
-				}
-				else
-					data[key] = previousData + " (in " + previouskey + ")";
-			}	
-			else
-			{
-				data[key] = previousData;
-			}
-		}
-	}
-	return data;
-}
+// 		if (key >= 1960 && data[key] != 0)
+// 		{
+// 			previousData = Math.round(parseFloat(data[key]));// + " (in " + key + ")";
+// 			previouskey = key;
+// 		}
+// 		else if (key >= 1960)
+// 		{
+// 			if (previousData != 0)
+// 			{
+// 				var nextKey = Number(key) + 1;
+// 				while (nextKey in data && data[nextKey] == 0)
+// 				{
+// 					nextKey += 1;
+// 				}
+// 				if (nextKey in data && data[nextKey] != 0)
+// 				{
+// 					previousData += Math.round(Math.round((parseFloat(data[nextKey])) - previousData) / (nextKey - key));
+// 					data[key] = previousData;
+// 				}
+// 				else
+// 					data[key] = previousData;
+// 			}	
+// 			else
+// 			{
+// 				data[key] = previousData;
+// 			}
+// 		}
+// 	}
+// 	return data;
+// }
 
 function addIndicator(error, data, mapping, indicatorName) 
 {
+	var countryElement = [];
+	var countryName = "";
 	data.forEach(function(d) 
 	{
-		var countryCode = d['Country Name'];
-		var countryElement = [];
-
-		if (mapping.has(countryCode))
+		var countryName = d['Country Name'];
+		countryElement = [];
+		if (mapping.has(countryName))
 		{
-			countryElement = mapping.get(countryCode);
+			countryElement = mapping.get(countryName);
 		}
 
-		// Interpolate missing data, turn of by setting to 'd'.
-	//	var interpolatedData = InterpolateMissingData(d);
-		var interpolatedData = d;
+		countryElement[indicatorName] = [];
 
+		for (key in d)
+		{
+			if (key >= 1960)
+			{
+				countryElement[indicatorName][key] = parseFloat(d[key]) || "";
+			}
+		}
+		
+		// Interpolate missing data, turn of by setting to 'd'.
+		var interpolatedData = InterpolateMissingData(countryElement[indicatorName]);
+		
     	countryElement[indicatorName] = interpolatedData;
-    	mapping.set(countryCode, countryElement);
+    	mapping.set(countryName, countryElement);
 	});
 }
 
