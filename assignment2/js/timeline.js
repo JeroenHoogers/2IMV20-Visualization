@@ -18,7 +18,7 @@ Timeline.prototype.Initialize = function ()
 		.attr("width", this.width)
 		.attr("height", this.height);
 
-	this.margin = {top: 10, right: 30, bottom: 30, left: 30};
+	this.margin = {top: 30, right: 40, bottom: 30, left: 40};
 	this.innerWidth = +this.svg.attr("width") - this.margin.left - this.margin.right;
 	this.innerHeight = +this.svg.attr("height") - this.margin.top - this.margin.bottom;
 
@@ -31,7 +31,6 @@ Timeline.prototype.Initialize = function ()
 	this.y = d3.scale.linear()
 	    .rangeRound([this.innerHeight, 0]);
 
-
 	this.z = d3.scale.category10();
 
 	this.xAxis = d3.svg.axis()
@@ -43,6 +42,15 @@ Timeline.prototype.Initialize = function ()
 		// .outerTickSize(0) 
 		.tickSize(10, 10, 0);
 
+	this.yAxis = d3.svg.axis()
+		.scale(this.y)
+		.orient("left")
+		.ticks(5)
+		.tickFormat(function(d){ return d + "%"});
+
+	this.yScale = this.svg.append("g")
+		.attr("class", "axis")
+		.attr("transform", "translate("+ this.margin.left + "," + this.margin.top + ")");
 
 	// Default data
 	var data = developmentData.get("Land_Distribution").get("World");
@@ -52,7 +60,7 @@ Timeline.prototype.Initialize = function ()
 	this.timescale = this.svg.append("g")
 		.attr("class", "axis")
 		.attr("transform", "translate("+ this.margin.left + "," + (this.height - this.margin.bottom) + ")")
-		.call(this.xAxis);
+		.call(this.xAxis);		
 };
 
 
@@ -93,12 +101,8 @@ Timeline.prototype.render = function(data)
 
  	// Adjust domains using maximum values
     this.y.domain([
-      0,
-      d3.max(layers, function (layer){
-        return d3.max(layer.values, function (d){
-          return d.y0 + d.y;
-        });
-      })
+    	0,
+  		100
     ]);
 
     // Create stacked bars
@@ -120,5 +124,9 @@ Timeline.prototype.render = function(data)
 		.attr("height", function(d,i) { return that.innerHeight - that.y(d.val);})
 	  	.attr("y", function(d) { return that.y(d.y0 + d.val);});
 
+	 this.yScale
+	 	.call(this.yAxis);
 };
+
+
 

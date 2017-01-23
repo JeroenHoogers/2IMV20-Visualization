@@ -25,16 +25,22 @@ Filter.prototype.updateYear = function (year)
 {
 	this.yearFilter = year;
 
-	// Update map and legend
+	// Get dataset
+	var data = developmentData.get(this.categoryFilter);
+	// Filter year
+	// data = data.filter(function(value){ return value.date == this.yearFilter});
 
+	worldmap.render(data);
 };
 
 Filter.prototype.updateCountry = function (country)
 {
 	this.countryFilter = country;
 
+	// Get new dataset
 	var data = developmentData.get(this.categoryFilter).get(this.countryFilter);
-	// Update timeline and legend
+
+	// Update timeline and summary
 	timeline.render(data);
 };
 

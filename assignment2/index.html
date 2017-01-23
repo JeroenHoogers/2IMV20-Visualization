@@ -50,15 +50,15 @@
 
 	    var map;
 	    var timeline;
-	    var legend;
+	//    var summary;
 
-	    var filter = new Filter(map, timeline, legend);
+	    var filter = new Filter(map, timeline, summary);
 
 	    // TODO: construct after data is finished loading using an event.
 		setTimeout(function(){ 
 		    map = new Worldmap(900, 600);
-		    timeline = new Timeline(1180, 180);
-		    legend = new Legend(275, 400);
+		    timeline = new Timeline(1180, 200);
+		 //   summary = new Summary(275, 500);
 		 }, 500);
 
 		// Create summary svg

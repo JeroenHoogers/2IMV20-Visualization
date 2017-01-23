@@ -110,7 +110,8 @@ function addIndicator(error, data, mapping, mainIndicator, indicatorName)
 			  		"date": key,
 			  		"val": val,
 			  		"indicator": indicatorName,
-			  		"nodata" : missingdata
+			  		"nodata" : missingdata,
+			  		"country" : countryName
 			  	});
 			}
 		}

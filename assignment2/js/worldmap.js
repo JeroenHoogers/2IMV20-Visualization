@@ -6,7 +6,7 @@ var Worldmap = function (width, height)
 
 	this.selectedCountry = d3.select(null);
 	this.filterYear = "2015";
-	this.filterIndicator = "Total_Land_Sqkm";
+	this.filterIndicator = "Agriculture_Land_perc";
 	this.hover;
 };
 
@@ -66,19 +66,72 @@ Worldmap.prototype.Initialize = function ()
   	// Load & fill worldmap
 	d3.json("data/world-topo-min.json", function(error, topology) 
 	{
-	    that.g.selectAll("path")
-	      	.data(topojson.feature(topology, topology.objects.countries).features)
-		    .enter()
-		      	.append("path")
-		      	.attr("d", that.path)
-		      	.attr("class", "country")
-		      	// .on("mouseenter", mouseenter.bind(that))
-		      	// .on("mouseleave", mouseexit)
-		   		.style("fill", that.countryColor.bind(that))
-		      	.on("click", function(d){that.clicked(d, that, this); })
-		      	.append("title").text(that.tooltip);
+		that.topology = topology;
 
+		var data = developmentData.get("Land_Distribution");
+
+		that.render(data);
 	});
+};
+
+
+Worldmap.prototype.render = function(data)
+{
+	var fulldata = [];
+
+	var that = this;
+	// Add all countries to one dataset
+	for(let entry of data)
+	{
+		// Apply filters
+		var countryData = entry[1].filter(function(value) { return value.date == that.filterYear && value.indicator == that.filterIndicator; });
+		
+		fulldata = fulldata.concat(countryData);
+
+		// console.log(entry);
+	}
+
+	var features = topojson.feature(this.topology, this.topology.objects.countries).features;
+
+	 //console.log(fulldata);
+	// Loop through each data element
+	for (var i = 0; i < fulldata.length; i++) 
+	{
+		// find country name and value
+		var dataCountry = fulldata[i].country;
+		var dataValue = fulldata[i].val;
+
+		// console.log(dataCountry);
+
+		// Find the corresponding state inside the GeoJSON
+		for (var j = 0; j < features.length; j++)  {
+			var topoCountry = features[j].properties.name;
+
+			if (dataCountry == topoCountry) 
+			{
+				// Copy the data value into the JSON
+				features[j].properties.value = dataValue; 
+				// console.log(topoCountry);
+				// Stop looking through the worldmap
+				break;
+			}
+		}
+	}
+
+	var that = this;
+
+	this.world = this.g.selectAll("path")
+      	.data(features)
+	    .enter()
+	      	.append("path")
+	      	.attr("d", that.path)
+	      	.attr("class", "country")
+	      	// .on("mouseenter", mouseenter.bind(that))
+	      	// .on("mouseleave", mouseexit)
+	   		.style("fill", that.countryColor.bind(that))
+	      	.on("click", function(d){that.clicked(d, that, this); })
+	      	.append("title").text(that.tooltip);
+
 };
 
 Worldmap.prototype.countryColor = function(d)
@@ -89,7 +142,7 @@ Worldmap.prototype.countryColor = function(d)
 	{
 		// TODO: insert dynamic indicator
 		//var val = parseInt(landDist.get(name)[this.filterIndicator][this.filterYear]);
-		return "grey";//this.color(val);
+		return this.color(d.properties.value);
 	}
 	else
 	{	
@@ -144,6 +197,8 @@ Worldmap.prototype.resetZoom = function()
 
 Worldmap.prototype.clicked = function(d, that, p) 
 {
+	console.log(d);
+
 	if(that.selectedCountry.node() === p) return that.resetZoom();
 	that.selectedCountry.classed("active", false);
 	// console.log(p);

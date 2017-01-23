@@ -75,6 +75,11 @@ path.domain
     cursor: pointer;
 }
 
+.date:hover
+{
+    fill-opacity: .7;
+}
+
 .date.active
 {
     stroke: black;
@@ -120,8 +125,9 @@ path.domain
  	cursor: pointer;
 }
 
-#world .hover {
- 	fill: lightgrey;
+#map path:hover {
+  fill-opacity: .7;
+ 	/*fill: lightgrey;*/
 /* 	stroke: white;
  	stroke-width: 0.25px;*/
 }
