@@ -85,7 +85,7 @@ Worldmap.prototype.countryColor = function(d)
 {
 	var name = d.properties.name;
 
-	if(landDist.has(name))
+	if(developmentData.has(name))
 	{
 		// TODO: insert dynamic indicator
 		//var val = parseInt(landDist.get(name)[this.filterIndicator][this.filterYear]);
@@ -106,9 +106,9 @@ Worldmap.prototype.tooltip = function(d)
 	var name = d.properties.name;
 	tooltip += name;
 
-	if(landDist.has(d.properties.name))
+	if(developmentData.has(d.properties.name))
 	{
-		console.log(landDist.get(name));
+		//console.log(developmentData.get(name));
 		// for (var i = 0; i < currentLand.length; i++)
 		// {
 		// 	console.log(currentLand);

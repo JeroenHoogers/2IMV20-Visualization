@@ -119,7 +119,10 @@ function addIndicator(error, data, mapping, mainIndicator, indicatorName)
 		//var interpolatedData = InterpolateMissingData(countryElement[indicatorName]);
 		
     	//countryElement[indicatorName] = interpolatedData;
-    	mapping.set(countryName, countryElement);
+    	indicatorMap.set(countryName, countryElement);
+    	mapping.set(mainIndicator, indicatorMap);
+    	if (countryName == "Canada")
+    		console.log(mapping);
 	});
 }
 
