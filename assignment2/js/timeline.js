@@ -18,7 +18,7 @@ Timeline.prototype.Initialize = function ()
 		.attr("width", this.width)
 		.attr("height", this.height);
 
-	this.margin = {top: 30, right: 40, bottom: 30, left: 40};
+	this.margin = {top: 35, right: 40, bottom: 25, left: 40};
 	this.innerWidth = +this.svg.attr("width") - this.margin.left - this.margin.right;
 	this.innerHeight = +this.svg.attr("height") - this.margin.top - this.margin.bottom;
 
@@ -38,8 +38,7 @@ Timeline.prototype.Initialize = function ()
 		.orient("bottom")
 		.ticks(10)
 		.tickSubdivide(4)
-		.tickFormat(function(d){ return d}) // <-- format
-		// .outerTickSize(0) 
+		.tickFormat(function(d){ return d}) // format years
 		.tickSize(10, 10, 0);
 
 	this.yAxis = d3.svg.axis()
@@ -52,6 +51,33 @@ Timeline.prototype.Initialize = function ()
 		.attr("class", "axis")
 		.attr("transform", "translate("+ this.margin.left + "," + this.margin.top + ")");
 
+
+	var indicators = ["Arable", "Forest", "Agriculture"];
+
+	// Create legend
+	this.legend = this.svg.append("g")
+		.selectAll("g")
+		.data([0,1,2])		// TODO: dynamic range
+		.enter()
+			.append("g")
+		  	.attr("class","legend")
+		  	.attr("transform", function(d,i) {
+		  		var x = i * 100 + 450;
+		  		var y = 5;
+		  		return "translate(" + x + "," + y + ")";}
+	  		);
+
+	this.legend.append("rect")
+		.attr("width", 15)
+		.attr("height", 15)
+		.style("fill", this.z)
+		.style("stroke", this.z);
+
+	this.legend.append("text")
+		.attr("x", 20)
+		.attr("y", 10)
+		.text(function(d){ return indicators[d]});
+		  	
 	// Default data
 	var data = developmentData.get("Land_Distribution").get("World");
  	this.render(data);
@@ -69,6 +95,9 @@ Timeline.prototype.clicked = function(d, that, p)
 	// if(that.selectedCountry.node() === p) return that.resetZoom();
 	that.selectedYear.classed("active", false);
 	that.selectedYear = d3.select(p).classed("active", true);
+
+	filter.updateYear(d.date);
+	filter.updateIndicator(d.indicator);
 
 };
 
@@ -102,7 +131,12 @@ Timeline.prototype.render = function(data)
  	// Adjust domains using maximum values
     this.y.domain([
     	0,
-  		100
+    	100
+		// d3.max(layers, function (layer){
+  //        return d3.max(layer.values, function (d){
+  //          return d.y0 + d.y;
+  //        });
+  //      })
     ]);
 
     // Create stacked bars

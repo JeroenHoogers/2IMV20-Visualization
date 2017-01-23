@@ -5,7 +5,7 @@ var Worldmap = function (width, height)
 	this.Initialize();
 
 	this.selectedCountry = d3.select(null);
-	this.filterYear = "2015";
+	this.filterYear = "1980";
 	this.filterIndicator = "Agriculture_Land_perc";
 	this.hover;
 };
@@ -37,7 +37,7 @@ Worldmap.prototype.Initialize = function ()
 	 //    .range(d3.schemeBlues);
 
 	this.color = d3.scale.linear()
-		.domain([0, 2000000])		// TODO: dynamic scale based on max value / use percentages
+		.domain([0, 100000])		// TODO: dynamic scale based on max value / use percentages
 		.range(["lightblue","#11bfff"]);
 
 	this.svg = d3.select("#map").append("svg")
@@ -87,19 +87,23 @@ Worldmap.prototype.render = function(data)
 		var countryData = entry[1].filter(function(value) { return value.date == that.filterYear && value.indicator == that.filterIndicator; });
 		
 		fulldata = fulldata.concat(countryData);
-
-		// console.log(entry);
 	}
 
 	var features = topojson.feature(this.topology, this.topology.objects.countries).features;
 
-	 //console.log(fulldata);
+	// Adjust domain
+	this.color.domain([0, d3.max(fulldata, function (d){ return d.val; })]);
+
+	// TODO: Adjust legend
+
+	//console.log(fulldata);
 	// Loop through each data element
 	for (var i = 0; i < fulldata.length; i++) 
 	{
 		// find country name and value
 		var dataCountry = fulldata[i].country;
 		var dataValue = fulldata[i].val;
+		var dataNodata = fulldata[i].nodata;
 
 		// console.log(dataCountry);
 
@@ -111,6 +115,7 @@ Worldmap.prototype.render = function(data)
 			{
 				// Copy the data value into the JSON
 				features[j].properties.value = dataValue; 
+				features[j].properties.nodata = dataNodata;
 				// console.log(topoCountry);
 				// Stop looking through the worldmap
 				break;
@@ -122,15 +127,20 @@ Worldmap.prototype.render = function(data)
 
 	this.world = this.g.selectAll("path")
       	.data(features)
-	    .enter()
-	      	.append("path")
+      	.style("fill", that.countryColor.bind(that))
+		.enter()
+		    .append("path")
 	      	.attr("d", that.path)
 	      	.attr("class", "country")
+	      	.on("click", function(d){that.clicked(d, that, this); })
+	      	.style("fill", that.countryColor.bind(that))
 	      	// .on("mouseenter", mouseenter.bind(that))
 	      	// .on("mouseleave", mouseexit)
-	   		.style("fill", that.countryColor.bind(that))
-	      	.on("click", function(d){that.clicked(d, that, this); })
 	      	.append("title").text(that.tooltip);
+
+	 // this.world.selectAll("path").transition().duration(200).style("fill", function(d) { console.log(d.properties.value);return that.color(d.properties.value); });
+
+    // this.world.transition(500).style("fill", function(d) { console.log(d.properties.value);return that.color(d.properties.value); });
 
 };
 
@@ -138,7 +148,7 @@ Worldmap.prototype.countryColor = function(d)
 {
 	var name = d.properties.name;
 
-	if(developmentData.has(name))
+	if(!d.properties.nodata)
 	{
 		// TODO: insert dynamic indicator
 		//var val = parseInt(landDist.get(name)[this.filterIndicator][this.filterYear]);

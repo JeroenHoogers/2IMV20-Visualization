@@ -118,6 +118,11 @@ path.domain
   stroke-width: 2.5px;
   shape-rendering: crispEdges;
 }
+
+
+.legend  text {
+  font: 12px sans-serif;
+}
 /*
 #world .active {
  	
