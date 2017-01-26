@@ -3,7 +3,7 @@ var Summary = function (width, height)
 	this.selection = "World";
 	this.width = width;
 	this.height = height;
-	this.Initialize(3);
+	this.Initialize();
 
 	this.selectedYear = d3.select(null);
 };
@@ -11,15 +11,14 @@ var Summary = function (width, height)
 Summary.prototype = Object.create(Object.prototype);
 
 //Private methods
-Summary.prototype.Initialize = function (nCharts) 
+Summary.prototype.Initialize = function () 
 {
 	// Create timeline svg
-	for (var i = 0; i < nCharts; i++)
 	this.svg = d3.select("#summary").append("svg")
         .attr("width", this.width)
-        .attr("height", this.height / 2);
+        .attr("height", this.height);
 
-	this.margin = {top: 10, right: 30, bottom: 100, left: 50};
+	this.margin = {top: 40, right: 30, bottom: 200, left: 50};
 	this.innerWidth = +this.svg.attr("width") - this.margin.left - this.margin.right;
 	this.innerHeight = +this.svg.attr("height") - this.margin.top - this.margin.bottom;
 
@@ -29,10 +28,10 @@ Summary.prototype.Initialize = function (nCharts)
 	//this.xColumn = "1990";
     //this.yColumn = "2010";
 
-    this.xAxisLabelText = "Country";
+    this.xAxisLabelText = "Year";
     this.xAxisLabelOffset = 38;
 
-    this.yAxisLabelText = "Forest";
+    this.yAxisLabelText = "%";
     this.yAxisLabelOffset = 30;
 	// this.x = d3.scaleBand()
 	//     .rangeRound([0, width])
@@ -93,12 +92,12 @@ Summary.prototype.Initialize = function (nCharts)
 
     var that = this;
 
-	
 	var data = developmentData.get("Land_Distribution").get("World"); 
+
+	this.render(data);
 
 	// Format data before use it
 	// TODO: use dynamic indicator
-	this.render(data);
 
 	this.linescale = this.svg.append("g")
 		.attr("class", "axis")
@@ -127,7 +126,6 @@ Summary.prototype.Initialize = function (nCharts)
 
 };
 
-
 Summary.prototype.clicked = function(d, that, p) 
 {
 	// if(that.selectedCountry.node() === p) return that.resetZoom();
@@ -144,10 +142,12 @@ Summary.prototype.render = function(data)
 	data.filter(function (value) { return value.indicator == indicators[1]}),
 	data.filter(function (value) { return value.indicator == indicators[2]})];
 
+	var that = this;
+
 	this.line = d3.svg.line()
 		.interpolate("basis") 
-        .x(function(d) { return this.x(d.date); })
-        .y(function(d) { return this.y(d.val); })
+        .x(function(d) { return that.x(d.date); })
+        .y(function(d) { return that.y(d.val); })
         .defined(function(d) { return (!d.nodata); });
 	//this.x.domain(d3.extent(data, function (d){ return that.x(parseInt(d.date)); }));
     //this.y.domain(d3.extent(data, function (d){ return that.y(d.val); }));
@@ -155,19 +155,33 @@ Summary.prototype.render = function(data)
     this.xAxisG.call(this.xAxis);
     this.yAxisG.call(this.yAxis);
 
-	this.xAxisLabel.text(data[0].indicator);
-	this.yAxisLabel.text(data[0].country);
+	//this.xAxisLabel.text(data[0].indicator);
+	//this.yAxisLabel.text(data[0].country);
 
-	var that = this;
+	// var lines = this.g.selectAll(".lines")
+ //    	.data(innerdata)
+ //    	.enter().append("g")
+ //      	.attr("class", "lines");
+
+	// lines.append("path")
+	// 	.attr("class", "line")
+	// 	.attr("d", function(d) { return that.line(d.values); })
+	// 	.style("stroke", function(d) { return that.z(d.id); });
 
 	this.path.data(data);
-	this.path.attr("d",  this.line(data))
-	       .style("stroke", that.z([0, 1 , 2]))
+	this.path.attr("d",  this.line(data))//(function(d) {return that.line(d);}) )
+	       .style("stroke", function(d) {return that.z(indicators.indexOf(d.indicator));} )
 	       .style("stroke-width", "1.5px");
-	// this.path.data(innerdata);
-	// this.path.attr("d", function(d){ that.line(d);})
-	//        .style("stroke", function(d){that.z([0, 1 , 2]);})
-	//        .style("stroke-width", "1.5px");
+
+
+	// this.path.transition().duration(1500)
+	// 	.attr("x", function(d,i) { return that.innerHeight - that.x(d.date);})
+	//  	.attr("y", function(d) { return that.y(d.y0 + d.val);})
+	//   	.transition().attr("d", this.line);
+	
+	d3.selectAll("input").on("input", function() {
+		filter.updateCategoryIndicator(this.value);
+	});
 
 	// this.path.append("path")
 	// 	.attr("d", this.line(data))

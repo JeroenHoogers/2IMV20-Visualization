@@ -43,6 +43,7 @@ Filter.prototype.updateCountry = function (country)
 
 	// Update timeline and summary
 	timeline.render(data);
+	summary.render(data);
 };
 
 Filter.prototype.updateIndicator = function(indicator)
@@ -54,4 +55,31 @@ Filter.prototype.updateIndicator = function(indicator)
 	worldmap.filterYear = this.yearFilter.toString();
 	worldmap.filterIndicator = this.indicatorFilter;
 	worldmap.render(data);
-}
+};
+
+Filter.prototype.updateCategoryIndicator = function(categoryIndicator)
+{
+	this.categoryFilter = categoryIndicator;
+
+	//Get first indicator from current category.
+	for (var indicator in developmentData.get(this.categoryFilter))
+	{
+		this.indicatorFilter = indicator;
+		break;
+	}
+
+	var data = developmentData.get(this.categoryFilter);
+
+	// Update worldmap
+	worldmap.filterYear = this.yearFilter.toString();
+	worldmap.filterIndicator = this.indicatorFilter;
+	worldmap.render(data);
+
+	data = developmentData.get(this.categoryFilter).get(this.countryFilter);
+	
+	//Update timeline and summary
+	timeline.render(data);
+	summary.render(data);
+
+
+};
