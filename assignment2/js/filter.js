@@ -1,8 +1,9 @@
-var Filter = function (map, timeline, legend) 
+var Filter = function (map, timeline, pieChartA, pieChartB) 
 {
 	this.worldmap = map;
 	this.timeline = timeline;
-	this.legend = legend;
+	this.pieChartA = pieChartA;
+	this.pieChartB = pieChartB;
 
 	// Default filters
 	this.yearFilter = 1981;
@@ -32,6 +33,11 @@ Filter.prototype.updateYear = function (year)
 	worldmap.filterYear = this.yearFilter.toString();
 	worldmap.filterIndicator = this.indicatorFilter;
 	worldmap.render(data);
+
+	pieChartA.filterYear = this.yearFilter.toString();
+	pieChartB.filterYear = this.yearFilter.toString();
+	pieChartA.render();
+	pieChartB.render();
 };
 
 Filter.prototype.updateCountry = function (country)
@@ -43,7 +49,10 @@ Filter.prototype.updateCountry = function (country)
 
 	// Update timeline and summary
 	timeline.render(data);
-	summary.render(data);
+	pieChartA.filterCountry = country;
+	pieChartA.render();
+	pieChartB.filterCountry = country;
+	pieChartB.render();
 };
 
 Filter.prototype.updateIndicator = function(indicator)
@@ -79,7 +88,6 @@ Filter.prototype.updateCategoryIndicator = function(categoryIndicator)
 	
 	//Update timeline and summary
 	timeline.render(data);
-	summary.render(data);
 
 
 };

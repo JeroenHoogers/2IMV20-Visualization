@@ -15,6 +15,12 @@
 					Legend
   					<label><input type="radio" name="dataset" value="Land_Distribution" checked> Land</label>
   					<label><input type="radio" name="dataset" value="GDP_Distribution"> GDP</label>
+					<div id="pieChart-container">
+						<div id="pieA">
+						</div>
+						<div id="pieB">
+						</div>
+					</div>
 					<div id="summary"></div>
 				</div>
 				<div class="main-content">
@@ -34,6 +40,7 @@
 		<script src="js/dataloader.js"></script>
 		<script src="js/timeline.js"></script>
 		<script src="js/worldmap.js"></script>
+		<script src="js/pieChart.js"></script>
 		<script src="js/summary.js"></script>
 		<script src="js/filter.js"></script>
 		<script>
@@ -50,15 +57,18 @@
 
 	    var worldmap;
 	    var timeline;
+	    var pieChartA;
+	    var pieChartB;
 	    var summary;
-
-	    var filter = new Filter(worldmap, timeline, summary);
+	    var filter = new Filter(worldmap, timeline, pieChartA, pieChartB);
 
 	    // TODO: construct after data is finished loading using an event.
 		setTimeout(function(){ 
 		    worldmap = new Worldmap(900, 600);
 		    timeline = new Timeline(1180, 200);
-		    summary = new Summary(275, 400);
+		    pieChartA = new pieChart(275, 250, "pieA", "Land_Distribution", ["Arable_Land_perc", "Forest_Land_perc", "Agriculture_Land_perc", "Services_GDP_perc", "Industry_GDP_perc", "Agriculture_GDP_perc"], 0);
+		    pieChartB = new pieChart(275, 250, "pieB", "GDP_Distribution", ["Arable_Land_perc", "Forest_Land_perc", "Agriculture_Land_perc", "Services_GDP_perc", "Industry_GDP_perc", "Agriculture_GDP_perc"], 3);
+		    summary = new Summary(275, 100, ["Arable", "Forest", "Agriculture", "Services", "Industry", "AgricultureGDP"]);
 		 }, 500);
 
 		// Create summary svg
