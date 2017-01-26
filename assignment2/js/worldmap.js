@@ -26,6 +26,10 @@ Worldmap.prototype.Initialize = function ()
   //   .scale(1000)
   //   .translate([width / 2, height / 2]);
 
+  	this.x = d3.scale.linear()
+  		.domain([1,100])
+  		.rangeRound([0, 200]);
+
   	this.path = d3.geo.path().projection(this.projection);
 
   	// this.colorScale = d3.scale.linear()
@@ -37,8 +41,8 @@ Worldmap.prototype.Initialize = function ()
 	 //    .range(d3.schemeBlues);
 
 	this.color = d3.scale.linear()
-		.domain([0, 100000])		// TODO: dynamic scale based on max value / use percentages
-		.range(["lightblue","#11bfff"]);
+		.domain(d3.range(1, 100))		// TODO: dynamic scale based on max value / use percentages
+		.range(["lightblue","#1269FF"]);
 
 	this.svg = d3.select("#map").append("svg")
 		.attr("width", this.width)
@@ -58,10 +62,21 @@ Worldmap.prototype.Initialize = function ()
   		.attr("fill", "black")
   		.attr("font-size", "20px").text("World");
 
-  	this.legend = this.svg.append("g");
+  	this.axis = d3.svg.axis()
+		.scale(this.x)
+		.orient("bottom")
+		.tickSize(8)
+		.ticks(3)
+		.tickFormat(function(d,i){ return d + "%";});
+		// .tickValues([this.color.domain()[0],this.color.domain()[]]);
 
+	var that = this;
 
-  	var that = this;
+	this.legend = this.svg.append("g")
+  		.attr("class", "legend")
+  		.attr("transform", "translate(30, 510)");
+
+  
 
   	// Load & fill worldmap
 	d3.json("data/world-topo-min.json", function(error, topology) 
@@ -92,7 +107,22 @@ Worldmap.prototype.render = function(data)
 	var features = topojson.feature(this.topology, this.topology.objects.countries).features;
 
 	// Adjust domain
-	this.color.domain([0, d3.max(fulldata, function (d){ return d.val; })]);
+	var max = d3.max(fulldata, function (d){ return d.val; });
+
+	this.x.domain([0, max]);
+	this.color.domain([0, max]);
+
+	this.legend.selectAll("rect")
+  		.data(d3.range(this.color.domain()[0], this.color.domain()[1]))
+  		.enter().append("rect")
+  			.attr("height", 8)
+  			.attr("x", function(d){ return that.x(d);})
+  			.attr("width", 3)
+  			 // .attr("width", function(d){ return 10;})
+  			.attr("fill", function(d){ return that.color(d);});
+	
+	// set tick values
+	this.axis.tickValues([this.color.domain()[0], this.color.domain()[1]/2, this.color.domain()[1]]);
 
 	// TODO: Adjust legend
 
@@ -137,6 +167,10 @@ Worldmap.prototype.render = function(data)
 	      	// .on("mouseenter", mouseenter.bind(that))
 	      	// .on("mouseleave", mouseexit)
 	      	.append("title").text(that.tooltip);
+
+  	this.legend.call(this.axis)
+  		.select(".domain")
+  			.remove();
 
 	 // this.world.selectAll("path").transition().duration(200).style("fill", function(d) { console.log(d.properties.value);return that.color(d.properties.value); });
 

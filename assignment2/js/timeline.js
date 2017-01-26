@@ -31,7 +31,8 @@ Timeline.prototype.Initialize = function ()
 	this.y = d3.scale.linear()
 	    .rangeRound([this.innerHeight, 0]);
 
-	this.z = d3.scale.category10();
+	this.z = d3.scale.category10()
+		.domain([0,1,2,3,4,5,6,7,8,9]);
 
 	this.xAxis = d3.svg.axis()
 		.scale(this.x)
@@ -52,31 +53,10 @@ Timeline.prototype.Initialize = function ()
 		.attr("transform", "translate("+ this.margin.left + "," + this.margin.top + ")");
 
 
+	this.legend = this.svg.append("g");
+
 	var indicators = ["Arable", "Forest", "Agriculture"];
 
-	// Create legend
-	this.legend = this.svg.append("g")
-		.selectAll("g")
-		.data([0,1,2])		// TODO: dynamic range
-		.enter()
-			.append("g")
-		  	.attr("class","legend")
-		  	.attr("transform", function(d,i) {
-		  		var x = i * 100 + 450;
-		  		var y = 5;
-		  		return "translate(" + x + "," + y + ")";}
-	  		);
-
-	this.legend.append("rect")
-		.attr("width", 15)
-		.attr("height", 15)
-		.style("fill", this.z)
-		.style("stroke", this.z);
-
-	this.legend.append("text")
-		.attr("x", 20)
-		.attr("y", 10)
-		.text(function(d){ return indicators[d]});
 		  	
 	// Default data
 	var data = developmentData.get("Land_Distribution").get("World");
@@ -103,9 +83,6 @@ Timeline.prototype.clicked = function(d, that, p)
 
 Timeline.prototype.render = function(data)
 {
-	// Indicator / color bindings
-	var indicators = ["Arable_Land_perc", "Forest_Land_perc", "Agriculture_Land_perc"];
-
 	// Get new dataset
 	//var data = developmentData.get(mainIndicator).get(countryName);
 
@@ -125,8 +102,34 @@ Timeline.prototype.render = function(data)
  	layersGroups.enter().append("g").attr("class", "layer");
  	layersGroups.exit().remove();
  	layersGroups.style("fill", function(d) { 
-		return that.z(indicators.indexOf(d.key)); 
+		return that.z(indicatorMetaData.get(d.key).color); 
 	});
+
+ 	//console.log(filter.getIndicators());
+	// Create legend
+
+//	this.legend.remove();
+	this.legend.selectAll("g").remove();
+	var legendIndicators = this.legend.selectAll("g")
+		.data(filter.getIndicators())		// TODO: dynamic range
+		.enter()
+			.append("g")
+		  	.attr("class","legend")
+		  	.attr("transform", function(d,i) {
+		  		var x = i * 100 + 450;
+		  		var y = 5;
+		  		return "translate(" + x + "," + y + ")";}
+	  		);
+
+	legendIndicators.append("rect")
+		.attr("width", 15)
+		.attr("height", 15)
+		.style("fill",  function(d) { return that.z(d.data.color);});
+		// .style("stroke", function(d) { return that.z(indicatorMetaData.get(d).color);})
+	legendIndicators.append("text")
+		.attr("x", 20)
+		.attr("y", 10)
+		.text(function(d){ return d.data.name});	
 
  	// Adjust domains using maximum values
     this.y.domain([

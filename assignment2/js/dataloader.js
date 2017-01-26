@@ -1,5 +1,6 @@
 var countryMap = new Map();
 var developmentData = new Map();
+var indicatorMetaData = new Map();
 
 var timelineData;
 
@@ -125,8 +126,26 @@ function addIndicator(error, data, mapping, mainIndicator, indicatorName)
 	});
 }
 
+function createIndicatorMetaData()
+{
+	// Land distribution
+	indicatorMetaData.set("Land_Distribution", { "name" : "Land distribution", "category" : true, "color" : -1, "indicators" : ["Agriculture_Land_perc", "Arable_Land_perc", "Forest_Land_perc"] });
+	indicatorMetaData.set("Agriculture_Land_perc", { "name" : "Agriculture", "category" : false, "color" : 1 });
+	indicatorMetaData.set("Arable_Land_perc", { "name" : "Arable", "category" : false, "color" : 3});
+	indicatorMetaData.set("Forest_Land_perc", { "name" : "Forest", "category" : false, "color" : 2});
+
+	indicatorMetaData.set("GDP_Distribution", { "name" : "GDP distribution", "category" : true, "color" : -1, "indicators" : ["Agriculture_GDP_perc", "Industry_GDP_perc", "Services_GDP_perc"]});
+	indicatorMetaData.set("Agriculture_GDP_perc", { "name" : "Agriculture", "category" : false, "color" : 1 });
+	indicatorMetaData.set("Industry_GDP_perc", { "name" : "Industry", "category" : false, "color" : 0 });
+	indicatorMetaData.set("Services_GDP_perc", { "name" : "Services", "category" : false, "color" : 6 });
+};
+
 function loaddata()
 {
+	// create indicator meta data array
+	createIndicatorMetaData()
+
+
 	d3.csv("data/testworld.csv", function(error, data) {
 		timelineData = data;
 	});
