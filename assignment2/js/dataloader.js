@@ -64,6 +64,8 @@ function createIndicatorMetaData()
 	indicatorMetaData.set("Agriculture_GDP_perc", { "name" : "Agriculture", "category" : false, "color" : 1 });
 	indicatorMetaData.set("Industry_GDP_perc", { "name" : "Industry", "category" : false, "color" : 0 });
 	indicatorMetaData.set("Services_GDP_perc", { "name" : "Services", "category" : false, "color" : 6 });
+
+	indicatorMetaData.set("Other_perc", { "name" : "No data", "category" : true, "color" : 7 });
 };
 
 function loaddata()

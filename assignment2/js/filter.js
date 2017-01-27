@@ -88,12 +88,23 @@ Filter.prototype.updateCategoryIndicator = function(categoryIndicator)
 	
 	//Update timeline and summary
 	timeline.render(data);
-	summary.render(data);
 };
 
 Filter.prototype.getIndicators = function()
 {
 	var names = indicatorMetaData.get(this.categoryFilter).indicators;
+	var indicators = [];
+	for (var i = 0; i < names.length; i++) {
+		indicators.push({"id": names[i], "data" : indicatorMetaData.get(names[i])});
+	}
+
+	return indicators;
+};
+
+Filter.prototype.getIndicatorsByCategory = function(category)
+{
+	var names = indicatorMetaData.get(category).indicators;
+	names.push("Other_perc");
 	var indicators = [];
 
 	for (var i = 0; i < names.length; i++) {
