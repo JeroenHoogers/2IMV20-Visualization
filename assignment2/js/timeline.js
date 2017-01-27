@@ -78,7 +78,6 @@ Timeline.prototype.clicked = function(d, that, p)
 
 	filter.updateYear(d.date);
 	filter.updateIndicator(d.indicator);
-
 };
 
 Timeline.prototype.render = function(data)
@@ -152,9 +151,20 @@ Timeline.prototype.render = function(data)
 	this.bars
     	.attr("x", function(d) { return that.x(parseInt(d.date)) - 8; })
 	    .attr("width", 16)
-	    .attr("class",  function(d) { return d.nodata ? "date nodata" : "date"})
+	    .attr("class",  function(d) 
+    	{ 
+    		var classes = "date";
+    		if(d.nodata) classes += " nodata";
+    		if(d.indicator == filter.indicatorFilter && d.date == filter.yearFilter)
+    		{
+				that.selectedYear = d3.select(this);
+				classes += " active";
+    		}
+    		return classes;
+	    })
 	    .on("click", function(d){ that.clicked(d, that, this); });
 
+	// this.selectedYear = d3.select(this.bars).classed("active", true);
 
 	// Transition to new data
 	this.bars.transition().duration(750)

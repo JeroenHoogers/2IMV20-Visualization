@@ -241,8 +241,6 @@ Worldmap.prototype.resetZoom = function()
 
 Worldmap.prototype.clicked = function(d, that, p) 
 {
-	console.log(d);
-
 	if(that.selectedCountry.node() === p) return that.resetZoom();
 	that.selectedCountry.classed("active", false);
 	// console.log(p);
@@ -278,19 +276,3 @@ Worldmap.prototype.clicked = function(d, that, p)
 	// that.svg.selectAll("path")
 	// 	.classed("active", function(d) { return d === that.selectedCountry; });
 };
-
-
-// function mouseenter(d) 
-// {
-// 	hover = d;
-// 	this.svg.selectAll("path")
-// 		.classed("hover", function(d) { return d === hover; });
-		
-// }
-
-// function mouseexit(d) 
-// {
-// 	hover = null;
-// 	map.selectAll("path")
-// 		.classed("hover", function(d) { return d === hover; });	
-// }
