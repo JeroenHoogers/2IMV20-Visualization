@@ -12,13 +12,14 @@
 			</div>
 			<div class="content">
 				<div class="side-left">
-					Legend
-  					<label><input type="radio" name="dataset" value="Land_Distribution" checked> Land</label>
-  					<label><input type="radio" name="dataset" value="GDP_Distribution"> GDP</label>
 					<div id="pieChart-container">
+  						<label><input type="radio" name="dataset" value="Land_Distribution" checked> Land</label>
+  						<label><input type="radio" name="dataset" value="GDP_Distribution"> GDP</label>
 						<div id="pieA">
+						Land Distribution
 						</div>
 						<div id="pieB">
+						GDP Distribution
 						</div>
 					</div>
 					<div id="summary"></div>
@@ -41,7 +42,6 @@
 		<script src="js/timeline.js"></script>
 		<script src="js/worldmap.js"></script>
 		<script src="js/pieChart.js"></script>
-		<script src="js/summary.js"></script>
 		<script src="js/filter.js"></script>
 		<script>
 
@@ -66,9 +66,8 @@
 		setTimeout(function(){ 
 		    worldmap = new Worldmap(900, 600);
 		    timeline = new Timeline(1180, 200);
-		    pieChartA = new pieChart(275, 250, "pieA", "Land_Distribution", ["Arable_Land_perc", "Forest_Land_perc", "Agriculture_Land_perc", "Services_GDP_perc", "Industry_GDP_perc", "Agriculture_GDP_perc"], 0);
-		    pieChartB = new pieChart(275, 250, "pieB", "GDP_Distribution", ["Arable_Land_perc", "Forest_Land_perc", "Agriculture_Land_perc", "Services_GDP_perc", "Industry_GDP_perc", "Agriculture_GDP_perc"], 3);
-		    summary = new Summary(275, 100, ["Arable", "Forest", "Agriculture", "Services", "Industry", "AgricultureGDP"]);
+		    pieChartA = new pieChart(275, 260, "pieA", "Land_Distribution");
+		    pieChartB = new pieChart(275, 260, "pieB", "GDP_Distribution");
 		 }, 500);
 
 		// Create summary svg

@@ -7,6 +7,8 @@ var pieChart = function (width, height, id, category)
 	this.filterYear = "1980";
 	this.filterCountry = "World";
 	this.filterCategory = category;
+
+	this.selectedCategory = d3.select(null);
 	this.Initialize();
 };
 
@@ -21,7 +23,7 @@ pieChart.prototype.Initialize = function ()
 	    .attr("width", this.width)
 	    .attr("height", this.height)
 	  .append("g")
-	    .attr("transform", "translate(" + this.width / 2 + "," + (this.height / 2) + ")");
+	    .attr("transform", "translate(" + this.width / 2 + "," + ((this.height - 20) / 2) + ")");
 
 	this.z = d3.scale.category10()
 		.domain([0,1,2,3,4,5,6,7,8,9]);
@@ -33,16 +35,16 @@ pieChart.prototype.Initialize = function ()
 	this.arc = d3.svg.arc()
 	    .outerRadius(this.radius - 20);
 
-	this.pieLegend = this.svg.append("g");
+	this.legend = this.svg.append("g");
 	// Create legend
-	this.pieLegend.selectAll("g").remove();
-	var legendIndicators = this.pieLegend.selectAll("g")
+	this.legend.selectAll("g").remove();
+	var legendIndicators = this.legend.selectAll("g")
 		.data(filter.getIndicatorsByCategory(this.filterCategory))		// TODO: dynamic range
 		.enter()
 			.append("g")
-		  	.attr("class","pieLegend")
+		  	.attr("class","legend")
 		  	.attr("transform", function(d,i) {
-		  		var x = i * 74 - (that.width / 2);
+		  		var x = i * 100 - (that.width / 2);
 		  		var y = -15 + (that.height / 2);
 		  		return "translate(" + x + "," + y + ")";}
 	  		);
@@ -58,6 +60,11 @@ pieChart.prototype.Initialize = function ()
   		.attr("fill", "black")
 		.attr("font-size", "11px")
 		.text(function(d){ return d.data.name});	
+
+
+	d3.selectAll("input")
+		.on("change", function () {filter.updateCategoryIndicator(this.value);
+			filter.updateIndicator(indicatorMetaData.get(this.value).indicators[0]);});
 
 	this.data = developmentData.get(this.filterCategory).get(this.filterCountry)
 		.filter(function (value) { return value.date == that.filterYear});
@@ -127,9 +134,7 @@ pieChart.prototype.render = function()
 
 pieChart.prototype.clicked = function(d, that, p) 
 {
-	if (d.data.indicator != "Other_perc")
-	{	
-		filter.updateCategoryIndicator(that.filterCategory);
-		filter.updateIndicator(d.data.indicator);
-	}
+	d3.select("input[value=" + that.filterCategory + "]").property("checked", true);
+	filter.updateIndicator(d.data.indicator);
+	filter.updateCategoryIndicator(that.filterCategory);
 };

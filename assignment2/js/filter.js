@@ -104,7 +104,6 @@ Filter.prototype.getIndicators = function()
 Filter.prototype.getIndicatorsByCategory = function(category)
 {
 	var names = indicatorMetaData.get(category).indicators;
-	names.push("Other_perc");
 	var indicators = [];
 
 	for (var i = 0; i < names.length; i++) {
