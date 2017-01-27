@@ -62,6 +62,12 @@ Worldmap.prototype.Initialize = function ()
   		.attr("fill", "black")
   		.attr("font-size", "20px").text("World");
 
+  	this.dataLabel = this.svg.append("text")
+  		.attr("x", 30)
+  		.attr("y", 590)
+  		.attr("fill", "black")
+  		.attr("font-size", "14px").text("Agriculture, 2015");
+
   	this.axis = d3.svg.axis()
 		.scale(this.x)
 		.orient("bottom")
@@ -104,6 +110,8 @@ Worldmap.prototype.render = function(data)
 		fulldata = fulldata.concat(countryData);
 	}
 
+
+	this.dataLabel.text(indicatorMetaData.get(that.filterIndicator).name + ", " + that.filterYear);
 	var features = topojson.feature(this.topology, this.topology.objects.countries).features;
 
 	// Adjust domain
