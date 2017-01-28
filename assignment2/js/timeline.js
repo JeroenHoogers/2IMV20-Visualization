@@ -157,8 +157,14 @@ Timeline.prototype.render = function(data)
     		if(d.nodata) classes += " nodata";
     		if(d.indicator == filter.indicatorFilter && d.date == filter.yearFilter)
     		{
-				that.selectedYear = d3.select(this);
-				classes += " active";
+				// that.selectedYear = d3.select(this);
+				if(that.selectedYear !== undefined)
+				{
+					classes += " active";
+					// that.selectedYear.classed("active", false);
+					// that.selectedYear = d3.select(this).classed("active", true);
+				}
+				
     		}
     		return classes;
 	    })
