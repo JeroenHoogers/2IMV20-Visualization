@@ -88,7 +88,15 @@ pieChart.prototype.Initialize = function ()
 		.attr("d", that.arc)
 		.each(function(d) { this._current = d; })
 	    .on("click", function(d){ that.clicked(d, that, this); });
-
+	this.text = this.svg.selectAll(".arc")
+      	.data(this.pie)
+    	.enter().append("g")
+      	.attr("class", "arc").append("text")
+      .attr("transform", function(d) {d.innerRadius = 30;
+                d.outerRadius = that.radius + 30;
+                console.log(d); return "translate(" + that.arc.centroid(d) + ")"; })
+      .attr("dy", ".35em")
+      .text(function(d) {return (d.data.val == 0)? "" : d.data.val + "%"; });
 	this.render();
 };
 
@@ -120,6 +128,15 @@ pieChart.prototype.render = function()
 		.attr("fill", function(d, i) { return that.z(indicatorMetaData.get(d.data.indicator).color); })
 	    .attr("class",  function(d) { return d.data.nodata ? "nodata" : "date"}) // redraw the arcs
 
+
+    this.text
+      	.data(this.pie)
+      	.attr("transform", function(d) {d.innerRadius = 30;
+            d.outerRadius = that.radius + 30;
+            return "translate(" + that.arc.centroid(d) + ")"; })
+      	.attr("dy", ".35em")
+		.attr("font-size", function(d) {return (d.endAngle - d.startAngle < 0.5)? "9px" : "12px"; })
+      	.text(function(d) {return (d.data.val == 0)? "" : d.data.val + "%"; });
 	// Store the displayed angles in _current.
 	// Then, interpolate from _current to the new angles.
 	// During the transition, _current is updated in-place by d3.interpolate.
