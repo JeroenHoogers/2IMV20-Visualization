@@ -163,6 +163,11 @@ path {
   fill: grey;
 }
 
+.arc text
+{
+    fill: #fff;
+}
+
 /*.blur {
   -webkit-filter: blur(6px);
   filter: blur(6px);

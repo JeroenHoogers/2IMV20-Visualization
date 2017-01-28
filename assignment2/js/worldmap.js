@@ -111,7 +111,7 @@ Worldmap.prototype.render = function(data)
 	}
 
 
-	this.dataLabel.text(indicatorMetaData.get(that.filterIndicator).name + ", " + that.filterYear);
+	this.dataLabel.text(indicatorMetaData.get(that.filterIndicator).name + ", " + that.filterYear + " (" + indicatorMetaData.get(filter.categoryFilter).name + ")");
 	var features = topojson.feature(this.topology, this.topology.objects.countries).features;
 
 	// Adjust domain
