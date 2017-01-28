@@ -60,7 +60,7 @@ function createIndicatorMetaData()
 	indicatorMetaData.set("Arable_Land_perc", { "name" : "Arable", "category" : false, "color" : 3});
 	indicatorMetaData.set("Forest_Land_perc", { "name" : "Forest", "category" : false, "color" : 2});
 
-	indicatorMetaData.set("GDP_Distribution", { "name" : "GDP distribution", "category" : true, "color" : -1, "indicators" : ["Agriculture_GDP_perc", "Industry_GDP_perc", "Services_GDP_perc"]});
+	indicatorMetaData.set("GDP_Distribution", { "name" : "GDP sectors", "category" : true, "color" : -1, "indicators" : ["Agriculture_GDP_perc", "Industry_GDP_perc", "Services_GDP_perc"]});
 	indicatorMetaData.set("Agriculture_GDP_perc", { "name" : "Agriculture", "category" : false, "color" : 1 });
 	indicatorMetaData.set("Industry_GDP_perc", { "name" : "Industry", "category" : false, "color" : 0 });
 	indicatorMetaData.set("Services_GDP_perc", { "name" : "Services", "category" : false, "color" : 6 });
